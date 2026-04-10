@@ -17,6 +17,8 @@
 
 html { scroll-behavior: smooth; }
 
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--dark);
