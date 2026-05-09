@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apex 3D — Couteaux imprimés en 3D</title>
+  <link rel="icon" type="image/png" href="apex-3d.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <img src="apex-3d.png" alt="Apex 3D" class="logo-icon" />
+        <span>Apex 3D</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#catalogue">Catalogue</a></li>
+        <li><a href="#fabrication">Fabrication</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <button class="menu-toggle" aria-label="Menu">&#9776;</button>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-eyebrow">Artisanat numérique</p>
+      <h1>Couteaux imprimés<br/><span>en 3D</span></h1>
+      <p class="hero-subtitle">
+        Chaque lame est conçue et fabriquée à la main par Hugo Pouilliat,
+        avec une imprimante 3D de précision. Design unique, qualité artisanale.
+      </p>
+      <a href="#catalogue" class="btn-primary">Voir le catalogue</a>
+    </div>
+    <div class="hero-visual">
+      <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="hero-knife-svg">
+        <ellipse cx="150" cy="150" r="140" fill="#1a1a1a" stroke="#c9a84c" stroke-width="1.5"/>
+        <!-- Blade -->
+        <path d="M60 240 L200 80 L230 110 L90 260 Z" fill="url(#bladeGrad)"/>
+        <!-- Edge shine -->
+        <path d="M65 238 L198 83 L203 88 L68 244 Z" fill="url(#shineGrad)" opacity="0.5"/>
+        <!-- Handle -->
+        <rect x="80" y="230" width="70" height="22" rx="4" transform="rotate(-45 80 230)" fill="#5a3e28"/>
+        <rect x="82" y="232" width="66" height="7" rx="2" transform="rotate(-45 82 232)" fill="#7a5a3a" opacity="0.5"/>
+        <!-- Guard -->
+        <rect x="74" y="222" width="28" height="10" rx="2" transform="rotate(-45 74 222)" fill="#888"/>
+        <defs>
+          <linearGradient id="bladeGrad" x1="60" y1="240" x2="230" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#aaa"/>
+            <stop offset="50%" stop-color="#e8e8e8"/>
+            <stop offset="100%" stop-color="#bbb"/>
+          </linearGradient>
+          <linearGradient id="shineGrad" x1="65" y1="238" x2="203" y2="83" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="white" stop-opacity="0"/>
+            <stop offset="50%" stop-color="white" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stat">
+      <span class="stat-number">12</span>
+      <span class="stat-label">Modèles disponibles</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">100%</span>
+      <span class="stat-label">Fabriqué à la main</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">PLA+</span>
+      <span class="stat-label">Matériaux de qualité</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">Sur mesure</span>
+      <span class="stat-label">Commandes personnalisées</span>
+    </div>
+  </section>
+
+  <!-- CATALOGUE -->
+  <section class="catalogue" id="catalogue">
+    <div class="section-header">
+      <h2>Catalogue</h2>
+      <p>Découvrez nos créations uniques</p>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">Tous</button>
+      <button class="filter-btn" data-filter="chef">Chef</button>
+      <button class="filter-btn" data-filter="tactical">Tactique</button>
+      <button class="filter-btn" data-filter="decoratif">Décoratif</button>
+      <button class="filter-btn" data-filter="custom">Sur mesure</button>
+    </div>
+
+    <div class="grid" id="knife-grid">
+
+      <!-- Couteau 1 -->
+      <article class="card" data-category="chef">
+        <div class="card-img">
+          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="160" fill="#111"/>
+            <path d="M20 130 L200 40 L215 55 L35 145 Z" fill="url(#b1)"/>
+            <path d="M22 129 L200 42 L204 46 L24 134 Z" fill="white" opacity="0.25"/>
+            <rect x="14" y="120" width="55" height="16" rx="3" transform="rotate(-30 14 120)" fill="#3a2510"/>
+            <rect x="10" y="118" width="18" height="12" rx="2" transform="rotate(-30 10 118)" fill="#777"/>
+            <defs>
+              <linearGradient id="b1" x1="20" y1="130" x2="215" y2="40" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#999"/>
+                <stop offset="60%" stop-color="#e0e0e0"/>
+                <stop offset="100%" stop-color="#bbb"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="badge">Chef</span>
+        </div>
+        <div class="card-body">
+          <h3>Le Classique</h3>
+          <p>Couteau de chef polyvalent, lame longue et affilée, manche ergonomique imprimé en PLA+.</p>
+          <div class="card-meta">
+            <span class="material">PLA+ / PETG</span>
+            <span class="price">35 €</span>
+          </div>
+          <button class="btn-secondary" onclick="openModal('Le Classique', 'Couteau de chef polyvalent avec une lame longue et parfaitement équilibrée. Le manche ergonomique est imprimé en PLA+ haute résistance, texturé pour une meilleure prise en main. Finition mate noire.', 'PLA+ / PETG', '35 €', 'chef')">Voir les détails</button>
+        </div>
+      </article>
+
+      <!-- Couteau 2 -->
+      <article class="card" data-category="tactical">
+        <div class="card-img">
+          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="160" fill="#111"/>
+            <path d="M20 140 L210 30 L230 50 L210 55 L195 45 L40 148 Z" fill="url(#b2)"/>
+            <path d="M22 139 L210 32 L214 36 L24 144 Z" fill="white" opacity="0.2"/>
+            <rect x="10" y="132" width="50" height="18" rx="3" transform="rotate(-35 10 132)" fill="#1a1a1a"/>
+            <rect x="8" y="130" width="16" height="13" rx="2" transform="rotate(-35 8 130)" fill="#555"/>
+            <defs>
+              <linearGradient id="b2" x1="20" y1="140" x2="230" y2="30" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#777"/>
+                <stop offset="50%" stop-color="#d0d0d0"/>
+                <stop offset="100%" stop-color="#999"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="badge badge-tactical">Tactique</span>
+        </div>
+        <div class="card-body">
+          <h3>L'Ombre</h3>
+          <p>Design tactique compact, lame clip-point, manche texturé noir mat. Idéal pour la collection.</p>
+          <div class="card-meta">
+            <span class="material">ABS / Résine</span>
+            <span class="price">45 €</span>
+          </div>
+          <button class="btn-secondary" onclick="openModal(&quot;L'Ombre&quot;, &quot;Design tactique compact à lame clip-point, pensé pour la collection et l'exposition. Le manche en ABS noir mat est texturé pour un rendu militaire authentique. Livré avec support d'exposition.&quot;, 'ABS / Résine', '45 €', 'tactical')">Voir les détails</button>
+        </div>
+      </article>
+
+      <!-- Couteau 3 -->
+      <article class="card" data-category="decoratif">
+        <div class="card-img">
+          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="160" fill="#111"/>
+            <!-- Lame décorative avec gravure -->
+            <path d="M20 135 L195 35 L215 55 L195 60 L178 48 L38 142 Z" fill="url(#b3)"/>
+            <!-- Motif gravé sur la lame -->
+            <line x1="80" y1="110" x2="170" y2="52" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+            <line x1="90" y1="115" x2="180" y2="57" stroke="#c9a84c" stroke-width="0.5" opacity="0.4"/>
+            <!-- Manche décoré -->
+            <rect x="12" y="126" width="55" height="18" rx="3" transform="rotate(-32 12 126)" fill="#5c3a1e"/>
+            <rect x="14" y="128" width="51" height="5" rx="1" transform="rotate(-32 14 128)" fill="#8a5c30" opacity="0.6"/>
+            <rect x="10" y="124" width="16" height="13" rx="2" transform="rotate(-32 10 124)" fill="#999"/>
+            <defs>
+              <linearGradient id="b3" x1="20" y1="135" x2="215" y2="35" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#b8922a"/>
+                <stop offset="40%" stop-color="#f0d060"/>
+                <stop offset="100%" stop-color="#c9a84c"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="badge badge-deco">Décoratif</span>
+        </div>
+        <div class="card-body">
+          <h3>Le Doré</h3>
+          <p>Lame ornementale aux reflets dorés, gravures géométriques. Pièce de collection unique.</p>
+          <div class="card-meta">
+            <span class="material">PLA Métallique</span>
+            <span class="price">60 €</span>
+          </div>
+          <button class="btn-secondary" onclick="openModal('Le Doré', 'Pièce décorative exceptionnelle avec une lame aux reflets dorés et des gravures géométriques imprimées avec précision. Conçu uniquement pour la collection et l\'exposition. Livré dans un écrin.', 'PLA Métallique', '60 €', 'decoratif')">Voir les détails</button>
+        </div>
+      </article>
+
+      <!-- Couteau 4 -->
+      <article class="card" data-category="chef">
+        <div class="card-img">
+          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="160" fill="#111"/>
+            <path d="M20 140 L185 25 L205 45 L38 148 Z" fill="url(#b4)"/>
+            <!-- Trou dans la lame (santoku style) -->
+            <ellipse cx="120" cy="80" rx="10" ry="6" fill="#111" transform="rotate(-35 120 80)"/>
+            <path d="M22 139 L185 27 L188 30 L24 143 Z" fill="white" opacity="0.2"/>
+            <rect x="12" y="132" width="52" height="18" rx="3" transform="rotate(-33 12 132)" fill="#2a3a2a"/>
+            <rect x="10" y="130" width="16" height="13" rx="2" transform="rotate(-33 10 130)" fill="#888"/>
+            <defs>
+              <linearGradient id="b4" x1="20" y1="140" x2="205" y2="25" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#888"/>
+                <stop offset="55%" stop-color="#ddd"/>
+                <stop offset="100%" stop-color="#aaa"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="badge">Chef</span>
+        </div>
+        <div class="card-body">
+          <h3>Le Santoku</h3>
+          <p>Inspiré du couteau japonais, alvéoles anti-adhésives, manche vert forêt. Précision absolue.</p>
+          <div class="card-meta">
+            <span class="material">PETG / PLA</span>
+            <span class="price">40 €</span>
+          </div>
+          <button class="btn-secondary" onclick="openModal('Le Santoku', 'Inspiré du célèbre couteau japonais santoku, ce modèle dispose d\'alvéoles anti-adhésives imprimées avec précision sur la lame. Le manche vert forêt offre un contraste élégant. Parfait pour la découpe de légumes.', 'PETG / PLA', '40 €', 'chef')">Voir les détails</button>
+        </div>
+      </article>
+
+      <!-- Couteau 5 -->
+      <article class="card" data-category="tactical">
+        <div class="card-img">
+          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="160" fill="#111"/>
+            <!-- Lame drop-point -->
+            <path d="M20 145 L195 30 L215 50 L195 65 L180 52 L40 150 Z" fill="url(#b5)"/>
+            <!-- Scie sur le dos -->
+            <path d="M60 128 L65 120 L70 128 L75 118 L80 128 L85 116 L90 128 L95 114 L100 128 L105 113 L110 128 L115 113 L120 128 L125 114 L130 128" stroke="#666" stroke-width="1.5" fill="none" transform="rotate(-35 95 125)"/>
+            <path d="M22 144 L195 32 L198 35 L24 148 Z" fill="white" opacity="0.15"/>
+            <rect x="12" y="137" width="55" height="18" rx="3" transform="rotate(-36 12 137)" fill="#111"/>
+            <rect x="10" y="135" width="16" height="13" rx="2" transform="rotate(-36 10 135)" fill="#555"/>
+            <defs>
+              <linearGradient id="b5" x1="20" y1="145" x2="215" y2="30" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#666"/>
+                <stop offset="50%" stop-color="#ccc"/>
+                <stop offset="100%" stop-color="#888"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="badge badge-tactical">Tactique</span>
+        </div>
+        <div class="card-body">
+          <h3>Le Ranger</h3>
+          <p>Lame drop-point avec scie sur le dos, manche noir résistant. Robuste et fonctionnel.</p>
+          <div class="card-meta">
+            <span class="material">ABS haute densité</span>
+            <span class="price">55 €</span>
+          </div>
+          <button class="btn-secondary" onclick="openModal('Le Ranger', 'Couteau de collection tactique avec une lame drop-point et une scie sur le dos. Imprimé en ABS haute densité pour une résistance maximale. Le manche noir mat intègre un grip texturé anti-dérapant.', 'ABS haute densité', '55 €', 'tactical')">Voir les détails</button>
+        </div>
+      </article>
+
+      <!-- Couteau 6 -->
+      <article class="card" data-category="custom">
+        <div class="card-img">
+          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="160" fill="#111"/>
+            <!-- Question mark / custom -->
+            <text x="130" y="75" text-anchor="middle" fill="#c9a84c" font-size="48" font-family="Georgia, serif" opacity="0.8">?</text>
+            <text x="130" y="115" text-anchor="middle" fill="#888" font-size="13" font-family="sans-serif">Votre design</text>
+            <circle cx="130" cy="80" r="55" stroke="#c9a84c" stroke-width="1" stroke-dasharray="5,4" fill="none"/>
+          </svg>
+          <span class="badge badge-custom">Sur mesure</span>
+        </div>
+        <div class="card-body">
+          <h3>Sur Mesure</h3>
+          <p>Vous avez une idée ? Hugo peut la réaliser. Envoyez votre design, on s'occupe du reste.</p>
+          <div class="card-meta">
+            <span class="material">Au choix</span>
+            <span class="price">À partir de 50 €</span>
+          </div>
+          <button class="btn-secondary" onclick="openModal('Commande Sur Mesure', 'Hugo réalise votre couteau unique selon vos spécifications. Choisissez la forme de lame, la couleur du manche, le matériau d\'impression et les gravures. Délai de fabrication : 5 à 10 jours ouvrés. Contactez-nous pour démarrer votre projet.', 'Au choix', 'À partir de 50 €', 'custom')">Voir les détails</button>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- FABRICATION -->
+  <section class="fabrication" id="fabrication">
+    <div class="section-header">
+      <h2>Le Processus de Fabrication</h2>
+      <p>De l'idée à la lame, en quelques étapes</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3>Conception 3D</h3>
+          <p>Chaque couteau est modélisé dans un logiciel CAO, avec une attention particulière à l'ergonomie et aux proportions.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3>Impression</h3>
+          <p>L'imprimante 3D d'Hugo produit chaque pièce couche par couche, avec une précision au dixième de millimètre.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3>Finition</h3>
+          <p>Ponçage, peinture ou métallisation selon le modèle. Chaque pièce est vérifiée et validée à la main.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <h3>Livraison</h3>
+          <p>Emballage soigné et expédition sécurisée. Les couteaux de collection sont livrés avec un certificat d'authenticité.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <div class="contact-inner">
+      <div class="contact-text">
+        <h2>Contactez Hugo</h2>
+        <p>Pour une commande personnalisée, une question ou simplement pour en savoir plus sur les créations d'Hugo Pouilliat.</p>
+        <ul class="contact-info">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>contact@hugopouilliat.fr</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>France — Livraison nationale</span>
+          </li>
+        </ul>
+      </div>
+      <form class="contact-form" onsubmit="submitForm(event)">
+        <div class="form-group">
+          <label for="name">Nom</label>
+          <input type="text" id="name" placeholder="Votre nom" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="votre@email.fr" required />
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" rows="5" placeholder="Votre message ou description de commande…" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Envoyer</button>
+        <p class="form-success" id="form-success">Message envoyé ! Hugo vous répondra rapidement.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="apex-3d.png" alt="Apex 3D" class="logo-icon" />
+        <span>Apex 3D</span>
+      </div>
+      <p class="footer-tagline">Couteaux 3D — Artisanat numérique français</p>
+      <p class="footer-copy">&copy; 2026 Apex 3D — Hugo Pouilliat. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+      <div class="modal-badge" id="modal-badge"></div>
+      <h2 id="modal-title"></h2>
+      <p id="modal-desc"></p>
+      <div class="modal-meta">
+        <div>
+          <span class="meta-label">Matériaux</span>
+          <span id="modal-material"></span>
+        </div>
+        <div>
+          <span class="meta-label">Prix</span>
+          <span id="modal-price" class="modal-price"></span>
+        </div>
+      </div>
+      <a href="#contact" class="btn-primary" onclick="closeModal()">Commander / Renseignements</a>
+    </div>
+  </div>
+
+  <!-- CHATBOT -->
+  <div class="chat-bubble" id="chat-bubble" onclick="toggleChat()" title="Assistant Hugo">
+    <svg id="chat-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <svg id="chat-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <span class="chat-notif">1</span>
+  </div>
+
+  <div class="chat-window" id="chat-window">
+    <div class="chat-header">
+      <div class="chat-avatar">H</div>
+      <div class="chat-header-info">
+        <span class="chat-name">Assistant Hugo</span>
+        <span class="chat-status">En ligne</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">
+        <span>Bonjour ! 👋 Je suis l'assistant de Hugo Pouilliat. Je peux vous renseigner sur nos couteaux 3D, les prix, les commandes sur mesure ou la livraison. Comment puis-je vous aider ?</span>
+      </div>
+      <div class="chat-suggestions">
+        <button onclick="askQuestion('Quels couteaux sont disponibles ?')">🔪 Catalogue</button>
+        <button onclick="askQuestion('Quels sont vos prix ?')">💶 Prix</button>
+        <button onclick="askQuestion('Comment commander ?')">📦 Commander</button>
+        <button onclick="askQuestion('Faites-vous du sur mesure ?')">✏️ Sur mesure</button>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter') sendMessage()" />
+      <button onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>
