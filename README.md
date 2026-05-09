@@ -1,3 +1,5 @@
+<img width="1920" height="1080" alt="apex_3d_1" src="https://github.com/user-attachments/assets/14db5fc6-f475-4ad8-afd6-30a6c79f4eb3" />
+<img width="1920" height="1080" alt="apex_3d_2" src="https://github.com/user-attachments/assets/68ec7a4f-0af4-4844-89f1-a1f749b564c0" />
 # Apex 3D — Couteaux imprimés en 3D
 
 Site vitrine pour la vente de couteaux artisanaux fabriqués à la main par Hugo Pouilliat avec une imprimante 3D de précision.
