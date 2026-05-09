@@ -11,10 +11,8 @@ Site vitrine pour la vente de couteaux artisanaux fabriqués à la main par Hugo
 
 <!-- Glisse-dépose tes screenshots ici depuis l'éditeur GitHub -->
 
-![Hero](screenshots/hero.png)
 <img width="1920" height="1080" alt="apex_3d_2" src="https://github.com/user-attachments/assets/68ec7a4f-0af4-4844-89f1-a1f749b564c0" />
 
-![Catalogue](screenshots/catalogue.png)
 <img width="1920" height="1080" alt="apex_3d_2" src="https://github.com/user-attachments/assets/68ec7a4f-0af4-4844-89f1-a1f749b564c0" />
 
 
