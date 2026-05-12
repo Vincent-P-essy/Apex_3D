@@ -514,6 +514,137 @@ footer {
   .catalogue, .fabrication, .contact { padding: 4rem 5%; }
 }
 
+/* ===== AVANTAGES ===== */
+.avantages {
+  padding: 6rem 5%;
+  background: var(--dark-2);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.avantages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.75rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.avantage-card {
+  background: var(--dark-3);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.avantage-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(201,168,76,0.3);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+.avantage-icon {
+  width: 58px;
+  height: 58px;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  transition: background var(--transition), border-color var(--transition);
+}
+.avantage-card:hover .avantage-icon {
+  background: rgba(201,168,76,0.15);
+  border-color: rgba(201,168,76,0.4);
+}
+.avantage-icon svg { width: 24px; height: 24px; stroke: var(--gold); }
+.avantage-card h3 { color: var(--white); margin-bottom: 0.5rem; font-size: 1rem; }
+.avantage-card p { font-size: 0.87rem; line-height: 1.65; }
+
+/* ===== TEMOIGNAGES ===== */
+.temoignages {
+  padding: 6rem 5%;
+  background: var(--dark);
+}
+.temoignages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.75rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.temoignage {
+  background: var(--dark-3);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.temoignage:hover {
+  border-color: rgba(201,168,76,0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.3);
+}
+.stars { color: var(--gold); font-size: 0.95rem; letter-spacing: 3px; margin-bottom: 1rem; }
+.temoignage-text {
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--text);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+.temoignage-author { display: flex; align-items: center; gap: 0.75rem; }
+.author-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.author-name { font-weight: 600; color: var(--white); font-size: 0.88rem; display: block; }
+.author-detail { font-size: 0.76rem; color: var(--text-muted); }
+
+/* ===== CTA SECTION ===== */
+.cta-section {
+  padding: 6rem 5%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.1) 0%, transparent 65%), var(--dark-2);
+  text-align: center;
+  border-top: 1px solid rgba(201,168,76,0.12);
+  border-bottom: 1px solid rgba(201,168,76,0.12);
+}
+.cta-section h2 { color: var(--white); margin-bottom: 1rem; }
+.cta-section p { font-size: 1rem; max-width: 500px; margin: 0 auto 2.5rem; }
+.cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn-outline {
+  display: inline-block;
+  background: transparent;
+  color: var(--gold);
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  border-radius: 6px;
+  border: 1.5px solid var(--gold);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+}
+.btn-outline:hover { background: var(--gold); color: #000; transform: translateY(-2px); }
+
+/* ===== FOOTER CREDIT ===== */
+.footer-credit { font-size: 0.73rem; color: #333; margin-top: 0.25rem; }
+.footer-credit a { color: #555; text-decoration: none; transition: color var(--transition); }
+.footer-credit a:hover { color: var(--gold); }
+
 /* ===== CHATBOT ===== */
 .chat-bubble {
   position: fixed;

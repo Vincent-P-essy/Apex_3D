@@ -60,6 +60,31 @@ function submitForm(e) {
   setTimeout(() => { successEl.style.display = 'none'; }, 5000);
 }
 
+// Counter animation for stats
+const statNumbers = document.querySelectorAll('.stat-number');
+const statObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !entry.target.dataset.animated) {
+      entry.target.dataset.animated = 'true';
+      const el = entry.target;
+      const raw = el.textContent.trim();
+      const num = parseInt(raw);
+      if (!isNaN(num) && num > 1) {
+        const suffix = raw.replace(String(num), '');
+        let current = 0;
+        const steps = 40;
+        const increment = Math.ceil(num / steps);
+        const timer = setInterval(() => {
+          current = Math.min(current + increment, num);
+          el.textContent = current + suffix;
+          if (current >= num) clearInterval(timer);
+        }, 25);
+      }
+    }
+  });
+}, { threshold: 0.6 });
+statNumbers.forEach(n => statObserver.observe(n));
+
 // Animate cards on scroll
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
