@@ -1,48 +1,56 @@
+# Vincent Plessy — Portfolio
 
-# Apex 3D — Couteaux imprimés en 3D
+Portfolio personnel de **Vincent Plessy**, étudiant en informatique spécialisé backend, DevOps et cybersécurité.
 
-Site vitrine pour la vente de couteaux artisanaux fabriqués à la main par Hugo Pouilliat avec une imprimante 3D de précision.
-
-🌐 **[Voir le site en ligne](https://vincent-p-essy.github.io/Apex_3D/)**
-
----
-
-## Aperçu
-
-<!-- Glisse-dépose tes screenshots ici depuis l'éditeur GitHub -->
-
-<img width="1920" height="1080" alt="apex_3d_2" src="https://github.com/user-attachments/assets/68ec7a4f-0af4-4844-89f1-a1f749b564c0" />
-
-<img width="1920" height="1080" alt="apex_3d_2" src="https://github.com/user-attachments/assets/68ec7a4f-0af4-4844-89f1-a1f749b564c0" />
-
+🌐 **[Voir le portfolio](https://vincent-p-essy.github.io/Apex_3D/)**
 
 ---
 
-## Fonctionnalités
+## Présentation
 
-- Catalogue de couteaux avec filtres par catégorie (Chef, Tactique, Décoratif, Sur mesure)
-- Fiche détail par produit (modal)
-- Section fabrication avec processus d'impression 3D
-- Formulaire de contact
-- Chatbot assistant intégré
-- Design responsive (mobile / desktop)
+Étudiant en informatique, 22 ans. Spécialisé en développement backend, infrastructures DevOps et cybersécurité.  
+Recherche **alternance ou stage 2026**.
 
-## Technologies
+- 📧 vincent.plessy12@gmail.com  
+- 🔗 [LinkedIn](https://linkedin.com/in/vincent-plessy)  
+- 🐙 [GitHub](https://github.com/Vincent-P-essy)
 
-- HTML5 / CSS3 / JavaScript vanilla
-- Déployé via **GitHub Pages**
+---
+
+## Stack technique
+
+- **HTML5 / CSS3 / JavaScript vanilla** — zéro dépendance
+- Typo : Inter + JetBrains Mono (Google Fonts)
+- Déploiement : **GitHub Pages**
 
 ## Structure
 
 ```
-Apex_3D/
-├── index.html       # Page principale
-├── styles.css       # Styles
-├── script.js        # Interactions (filtres, modal, menu)
-├── chatbot.js       # Chatbot assistant
-└── apex-3d.png      # Logo / favicon
+portfolio/
+├── index.html     # Page principale
+├── styles.css     # Design (dark theme cyber)
+├── script.js      # Interactions & animations
+└── README.md      # Ce fichier
 ```
 
-## Auteur
+## Lancer localement
 
-**Vincent Plessy** — [GitHub](https://github.com/Vincent-P-essy)
+```bash
+git clone https://github.com/Vincent-P-essy/Apex_3D.git
+cd Apex_3D
+python3 -m http.server 8000
+# → http://localhost:8000
+```
+
+## Fonctionnalités
+
+- Hero terminal animé
+- Navigation sticky avec section active
+- Scroll reveal (Intersection Observer)
+- Formulaire de contact
+- SEO complet + Open Graph
+- 100% responsive
+
+---
+
+© 2026 Vincent Plessy

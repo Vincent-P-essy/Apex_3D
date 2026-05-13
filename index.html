@@ -3,523 +3,452 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Apex 3D — Couteaux imprimés en 3D</title>
-  <meta name="description" content="Couteaux artisanaux imprimés en 3D par Hugo Pouilliat. Design unique, matériaux de qualité, commandes sur mesure." />
-  <meta property="og:title" content="Apex 3D — Couteaux imprimés en 3D" />
-  <meta property="og:description" content="Couteaux artisanaux imprimés en 3D. Design unique, qualité artisanale." />
-  <meta property="og:image" content="apex-3d.png" />
-  <link rel="icon" type="image/png" href="apex-3d.png" />
-  <link rel="apple-touch-icon" href="apex-3d.png" />
+  <title>Vincent Plessy — Développeur Backend & DevOps</title>
+  <meta name="description" content="Portfolio de Vincent Plessy, étudiant en informatique spécialisé backend, DevOps et cybersécurité. Recherche alternance / stage 2026.">
+  <meta name="keywords" content="Vincent Plessy, développeur, backend, DevOps, cybersécurité, Python, Docker, Linux, alternance, portfolio">
+  <meta name="author" content="Vincent Plessy">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://vincent-p-essy.github.io/Apex_3D/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Vincent Plessy — Développeur Backend & DevOps">
+  <meta property="og:description" content="Portfolio · Backend · DevOps · Cybersécurité · Alternance 2026">
+  <meta property="og:url" content="https://vincent-p-essy.github.io/Apex_3D/">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="Vincent Plessy">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Vincent Plessy — Développeur Backend & DevOps">
+  <meta name="twitter:description" content="Étudiant en informatique · Backend · DevOps · Cybersécurité">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a1526'/><text x='16' y='23' text-anchor='middle' font-family='monospace' font-weight='700' font-size='17' fill='%233b9eff'>VP</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- NAVBAR -->
   <header>
-    <nav class="navbar">
-      <div class="logo">
-        <img src="apex-3d.png" alt="Apex 3D" class="logo-icon" />
-        <span>Apex 3D</span>
-      </div>
-      <ul class="nav-links">
-        <li><a href="#catalogue">Catalogue</a></li>
-        <li><a href="#fabrication">Fabrication</a></li>
-        <li><a href="#contact">Contact</a></li>
+    <nav class="navbar" id="navbar">
+      <a href="#" class="nav-logo">&lt;VP/&gt;</a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#about" class="nav-link">À propos</a></li>
+        <li><a href="#skills" class="nav-link">Compétences</a></li>
+        <li><a href="#projects" class="nav-link">Projets</a></li>
+        <li><a href="#parcours" class="nav-link">Parcours</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
       </ul>
-      <button class="menu-toggle" aria-label="Menu">&#9776;</button>
+      <a href="#contact" class="btn-nav">Me contacter</a>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
   </header>
 
   <!-- HERO -->
-  <section class="hero">
-    <div class="hero-content">
-      <p class="hero-eyebrow">Artisanat numérique</p>
-      <h1>Couteaux imprimés<br/><span>en 3D</span></h1>
-      <p class="hero-subtitle">
-        Chaque lame est conçue et fabriquée à la main par Hugo Pouilliat,
-        avec une imprimante 3D de précision. Design unique, qualité artisanale.
-      </p>
-      <a href="#catalogue" class="btn-primary">Voir le catalogue</a>
-    </div>
-    <div class="hero-visual">
-      <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="hero-knife-svg">
-        <ellipse cx="150" cy="150" r="140" fill="#1a1a1a" stroke="#c9a84c" stroke-width="1.5"/>
-        <!-- Blade -->
-        <path d="M60 240 L200 80 L230 110 L90 260 Z" fill="url(#bladeGrad)"/>
-        <!-- Edge shine -->
-        <path d="M65 238 L198 83 L203 88 L68 244 Z" fill="url(#shineGrad)" opacity="0.5"/>
-        <!-- Handle -->
-        <rect x="80" y="230" width="70" height="22" rx="4" transform="rotate(-45 80 230)" fill="#5a3e28"/>
-        <rect x="82" y="232" width="66" height="7" rx="2" transform="rotate(-45 82 232)" fill="#7a5a3a" opacity="0.5"/>
-        <!-- Guard -->
-        <rect x="74" y="222" width="28" height="10" rx="2" transform="rotate(-45 74 222)" fill="#888"/>
-        <defs>
-          <linearGradient id="bladeGrad" x1="60" y1="240" x2="230" y2="80" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#aaa"/>
-            <stop offset="50%" stop-color="#e8e8e8"/>
-            <stop offset="100%" stop-color="#bbb"/>
-          </linearGradient>
-          <linearGradient id="shineGrad" x1="65" y1="238" x2="203" y2="83" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="white" stop-opacity="0"/>
-            <stop offset="50%" stop-color="white" stop-opacity="0.9"/>
-            <stop offset="100%" stop-color="white" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-  </section>
-
-  <!-- STATS -->
-  <section class="stats">
-    <div class="stat">
-      <span class="stat-number">12</span>
-      <span class="stat-label">Modèles disponibles</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number">100%</span>
-      <span class="stat-label">Fabriqué à la main</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number">PLA+</span>
-      <span class="stat-label">Matériaux de qualité</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number">Sur mesure</span>
-      <span class="stat-label">Commandes personnalisées</span>
-    </div>
-  </section>
-
-  <!-- AVANTAGES -->
-  <section class="avantages">
-    <div class="section-header">
-      <h2>Pourquoi choisir Apex 3D ?</h2>
-      <p>Qualité artisanale, technologie de précision</p>
-    </div>
-    <div class="avantages-grid">
-      <div class="avantage-card">
-        <div class="avantage-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        </div>
-        <h3>Précision 0.1mm</h3>
-        <p>Chaque couteau est imprimé couche par couche avec une précision au dixième de millimètre pour un rendu parfait.</p>
+  <section class="hero" id="hero">
+    <div class="hero-text">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Disponible — Alternance / Stage 2026
       </div>
-      <div class="avantage-card">
-        <div class="avantage-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </div>
-        <h3>100% Fait main</h3>
-        <p>Chaque pièce est conçue, imprimée et finalisée à la main par Hugo en France. Aucune production en série.</p>
+      <h1>Vincent<br/><span>Plessy</span></h1>
+      <p class="hero-mono">Étudiant en informatique · Backend · DevOps · Cybersécurité</p>
+      <p class="hero-tagline">Je construis des systèmes robustes, sécurisés et maintenables. Passionné par Linux, les architectures distribuées et la sécurité offensive.</p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">Voir mes projets</a>
+        <a href="#contact" class="btn-outline">Me contacter</a>
       </div>
-      <div class="avantage-card">
-        <div class="avantage-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </div>
-        <h3>100% Personnalisable</h3>
-        <p>Design, couleurs, gravures, matériaux : tout peut être adapté à vos envies. Votre couteau, votre vision.</p>
+      <div class="hero-socials">
+        <a href="https://github.com/Vincent-P-essy" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        </a>
+        <a href="https://linkedin.com/in/vincent-plessy" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
       </div>
-      <div class="avantage-card">
-        <div class="avantage-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    </div>
+    <div class="hero-terminal reveal">
+      <div class="terminal-bar">
+        <span class="tb-dot tb-red"></span>
+        <span class="tb-dot tb-yellow"></span>
+        <span class="tb-dot tb-green"></span>
+        <span class="tb-title">bash — vincent@dev</span>
+      </div>
+      <div class="terminal-body">
+        <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">whoami</span></div>
+        <div class="t-line t-out">vincent_plessy</div>
+        <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">cat profil.txt</span></div>
+        <div class="t-line t-out">Backend Dev | DevOps | Cybersecurity</div>
+        <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">ls skills/</span></div>
+        <div class="t-line t-tags">
+          <span class="t-tag">Python</span>
+          <span class="t-tag">Docker</span>
+          <span class="t-tag">Linux</span>
+          <span class="t-tag">Git</span>
+          <span class="t-tag">Bash</span>
+          <span class="t-tag">CI/CD</span>
+          <span class="t-tag">Security</span>
         </div>
-        <h3>Livraison sécurisée</h3>
-        <p>Emballage protection soigné, expédition sous 24h. Livraison en France métropolitaine sous 3 à 5 jours ouvrés.</p>
+        <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">echo $STATUS</span></div>
+        <div class="t-line t-out t-green">Disponible · Alternance 2026</div>
+        <div class="t-line"><span class="t-prompt">$</span> <span class="t-cursor">█</span></div>
       </div>
     </div>
   </section>
 
-  <!-- CATALOGUE -->
-  <section class="catalogue" id="catalogue">
-    <div class="section-header">
-      <h2>Catalogue</h2>
-      <p>Découvrez nos créations uniques</p>
-    </div>
-
-    <!-- Filtres -->
-    <div class="filters">
-      <button class="filter-btn active" data-filter="all">Tous</button>
-      <button class="filter-btn" data-filter="chef">Chef</button>
-      <button class="filter-btn" data-filter="tactical">Tactique</button>
-      <button class="filter-btn" data-filter="decoratif">Décoratif</button>
-      <button class="filter-btn" data-filter="custom">Sur mesure</button>
-    </div>
-
-    <div class="grid" id="knife-grid">
-
-      <!-- Couteau 1 -->
-      <article class="card" data-category="chef">
-        <div class="card-img">
-          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
-            <rect width="260" height="160" fill="#111"/>
-            <path d="M20 130 L200 40 L215 55 L35 145 Z" fill="url(#b1)"/>
-            <path d="M22 129 L200 42 L204 46 L24 134 Z" fill="white" opacity="0.25"/>
-            <rect x="14" y="120" width="55" height="16" rx="3" transform="rotate(-30 14 120)" fill="#3a2510"/>
-            <rect x="10" y="118" width="18" height="12" rx="2" transform="rotate(-30 10 118)" fill="#777"/>
-            <defs>
-              <linearGradient id="b1" x1="20" y1="130" x2="215" y2="40" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#999"/>
-                <stop offset="60%" stop-color="#e0e0e0"/>
-                <stop offset="100%" stop-color="#bbb"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="badge">Chef</span>
+  <!-- ABOUT -->
+  <section class="about section" id="about">
+    <div class="container">
+      <div class="section-label reveal"><span class="label-mono">// 01</span> À propos</div>
+      <div class="about-grid">
+        <div class="about-bio reveal">
+          <h2>Passionné par les systèmes<br/>et la sécurité</h2>
+          <p>Étudiant en informatique de 22 ans, je me suis formé aussi bien en cours qu'en autodidacte sur des sujets qui me passionnent : les architectures systèmes, l'automatisation DevOps et la sécurité offensive. J'aime comprendre comment les choses fonctionnent en profondeur, et surtout comment elles peuvent être cassées — pour mieux les construire.</p>
+          <p>Que ce soit sur des challenges CTF, des pipelines CI/CD à déployer ou du scripting Linux, je cherche toujours à aller plus loin. Mon environnement de travail principal est Linux, mes outils de prédilection sont Python, Docker et Bash.</p>
+          <ul class="about-details">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span class="detail-label">Localisation</span>
+              <span>France</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              <span class="detail-label">Recherche</span>
+              <span>Alternance / Stage 2026</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span class="detail-label">Domaines</span>
+              <span>Backend · DevOps · Cybersécurité</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <span class="detail-label">Email</span>
+              <a href="mailto:vincent.plessy12@gmail.com">vincent.plessy12@gmail.com</a>
+            </li>
+          </ul>
         </div>
-        <div class="card-body">
-          <h3>Le Classique</h3>
-          <p>Couteau de chef polyvalent, lame longue et affilée, manche ergonomique imprimé en PLA+.</p>
-          <div class="card-meta">
-            <span class="material">PLA+ / PETG</span>
-            <span class="price">35 €</span>
+        <div class="about-stats reveal">
+          <div class="stat-card">
+            <span class="stat-value">3+</span>
+            <span class="stat-label">Projets déployés</span>
           </div>
-          <button class="btn-secondary" onclick="openModal('Le Classique', 'Couteau de chef polyvalent avec une lame longue et parfaitement équilibrée. Le manche ergonomique est imprimé en PLA+ haute résistance, texturé pour une meilleure prise en main. Finition mate noire.', 'PLA+ / PETG', '35 €', 'chef')">Voir les détails</button>
-        </div>
-      </article>
-
-      <!-- Couteau 2 -->
-      <article class="card" data-category="tactical">
-        <div class="card-img">
-          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
-            <rect width="260" height="160" fill="#111"/>
-            <path d="M20 140 L210 30 L230 50 L210 55 L195 45 L40 148 Z" fill="url(#b2)"/>
-            <path d="M22 139 L210 32 L214 36 L24 144 Z" fill="white" opacity="0.2"/>
-            <rect x="10" y="132" width="50" height="18" rx="3" transform="rotate(-35 10 132)" fill="#1a1a1a"/>
-            <rect x="8" y="130" width="16" height="13" rx="2" transform="rotate(-35 8 130)" fill="#555"/>
-            <defs>
-              <linearGradient id="b2" x1="20" y1="140" x2="230" y2="30" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#777"/>
-                <stop offset="50%" stop-color="#d0d0d0"/>
-                <stop offset="100%" stop-color="#999"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="badge badge-tactical">Tactique</span>
-        </div>
-        <div class="card-body">
-          <h3>L'Ombre</h3>
-          <p>Design tactique compact, lame clip-point, manche texturé noir mat. Idéal pour la collection.</p>
-          <div class="card-meta">
-            <span class="material">ABS / Résine</span>
-            <span class="price">45 €</span>
+          <div class="stat-card">
+            <span class="stat-value">10+</span>
+            <span class="stat-label">Technologies</span>
           </div>
-          <button class="btn-secondary" onclick="openModal(&quot;L'Ombre&quot;, &quot;Design tactique compact à lame clip-point, pensé pour la collection et l'exposition. Le manche en ABS noir mat est texturé pour un rendu militaire authentique. Livré avec support d'exposition.&quot;, 'ABS / Résine', '45 €', 'tactical')">Voir les détails</button>
-        </div>
-      </article>
-
-      <!-- Couteau 3 -->
-      <article class="card" data-category="decoratif">
-        <div class="card-img">
-          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
-            <rect width="260" height="160" fill="#111"/>
-            <path d="M20 135 L195 35 L215 55 L195 60 L178 48 L38 142 Z" fill="url(#b3)"/>
-            <line x1="80" y1="110" x2="170" y2="52" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
-            <line x1="90" y1="115" x2="180" y2="57" stroke="#c9a84c" stroke-width="0.5" opacity="0.4"/>
-            <rect x="12" y="126" width="55" height="18" rx="3" transform="rotate(-32 12 126)" fill="#5c3a1e"/>
-            <rect x="14" y="128" width="51" height="5" rx="1" transform="rotate(-32 14 128)" fill="#8a5c30" opacity="0.6"/>
-            <rect x="10" y="124" width="16" height="13" rx="2" transform="rotate(-32 10 124)" fill="#999"/>
-            <defs>
-              <linearGradient id="b3" x1="20" y1="135" x2="215" y2="35" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#b8922a"/>
-                <stop offset="40%" stop-color="#f0d060"/>
-                <stop offset="100%" stop-color="#c9a84c"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="badge badge-deco">Décoratif</span>
-        </div>
-        <div class="card-body">
-          <h3>Le Doré</h3>
-          <p>Lame ornementale aux reflets dorés, gravures géométriques. Pièce de collection unique.</p>
-          <div class="card-meta">
-            <span class="material">PLA Métallique</span>
-            <span class="price">60 €</span>
+          <div class="stat-card">
+            <span class="stat-value">CTF</span>
+            <span class="stat-label">Challenges résolus</span>
           </div>
-          <button class="btn-secondary" onclick="openModal('Le Doré', 'Pièce décorative exceptionnelle avec une lame aux reflets dorés et des gravures géométriques imprimées avec précision. Conçu uniquement pour la collection et l\'exposition. Livré dans un écrin.', 'PLA Métallique', '60 €', 'decoratif')">Voir les détails</button>
-        </div>
-      </article>
-
-      <!-- Couteau 4 -->
-      <article class="card" data-category="chef">
-        <div class="card-img">
-          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
-            <rect width="260" height="160" fill="#111"/>
-            <path d="M20 140 L185 25 L205 45 L38 148 Z" fill="url(#b4)"/>
-            <ellipse cx="120" cy="80" rx="10" ry="6" fill="#111" transform="rotate(-35 120 80)"/>
-            <path d="M22 139 L185 27 L188 30 L24 143 Z" fill="white" opacity="0.2"/>
-            <rect x="12" y="132" width="52" height="18" rx="3" transform="rotate(-33 12 132)" fill="#2a3a2a"/>
-            <rect x="10" y="130" width="16" height="13" rx="2" transform="rotate(-33 10 130)" fill="#888"/>
-            <defs>
-              <linearGradient id="b4" x1="20" y1="140" x2="205" y2="25" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#888"/>
-                <stop offset="55%" stop-color="#ddd"/>
-                <stop offset="100%" stop-color="#aaa"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="badge">Chef</span>
-        </div>
-        <div class="card-body">
-          <h3>Le Santoku</h3>
-          <p>Inspiré du couteau japonais, alvéoles anti-adhésives, manche vert forêt. Précision absolue.</p>
-          <div class="card-meta">
-            <span class="material">PETG / PLA</span>
-            <span class="price">40 €</span>
-          </div>
-          <button class="btn-secondary" onclick="openModal('Le Santoku', 'Inspiré du célèbre couteau japonais santoku, ce modèle dispose d\'alvéoles anti-adhésives imprimées avec précision sur la lame. Le manche vert forêt offre un contraste élégant. Parfait pour la découpe de légumes.', 'PETG / PLA', '40 €', 'chef')">Voir les détails</button>
-        </div>
-      </article>
-
-      <!-- Couteau 5 -->
-      <article class="card" data-category="tactical">
-        <div class="card-img">
-          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
-            <rect width="260" height="160" fill="#111"/>
-            <path d="M20 145 L195 30 L215 50 L195 65 L180 52 L40 150 Z" fill="url(#b5)"/>
-            <path d="M60 128 L65 120 L70 128 L75 118 L80 128 L85 116 L90 128 L95 114 L100 128 L105 113 L110 128 L115 113 L120 128 L125 114 L130 128" stroke="#666" stroke-width="1.5" fill="none" transform="rotate(-35 95 125)"/>
-            <path d="M22 144 L195 32 L198 35 L24 148 Z" fill="white" opacity="0.15"/>
-            <rect x="12" y="137" width="55" height="18" rx="3" transform="rotate(-36 12 137)" fill="#111"/>
-            <rect x="10" y="135" width="16" height="13" rx="2" transform="rotate(-36 10 135)" fill="#555"/>
-            <defs>
-              <linearGradient id="b5" x1="20" y1="145" x2="215" y2="30" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#666"/>
-                <stop offset="50%" stop-color="#ccc"/>
-                <stop offset="100%" stop-color="#888"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="badge badge-tactical">Tactique</span>
-        </div>
-        <div class="card-body">
-          <h3>Le Ranger</h3>
-          <p>Lame drop-point avec scie sur le dos, manche noir résistant. Robuste et fonctionnel.</p>
-          <div class="card-meta">
-            <span class="material">ABS haute densité</span>
-            <span class="price">55 €</span>
-          </div>
-          <button class="btn-secondary" onclick="openModal('Le Ranger', 'Couteau de collection tactique avec une lame drop-point et une scie sur le dos. Imprimé en ABS haute densité pour une résistance maximale. Le manche noir mat intègre un grip texturé anti-dérapant.', 'ABS haute densité', '55 €', 'tactical')">Voir les détails</button>
-        </div>
-      </article>
-
-      <!-- Couteau 6 -->
-      <article class="card" data-category="custom">
-        <div class="card-img">
-          <svg viewBox="0 0 260 160" xmlns="http://www.w3.org/2000/svg">
-            <rect width="260" height="160" fill="#111"/>
-            <text x="130" y="75" text-anchor="middle" fill="#c9a84c" font-size="48" font-family="Georgia, serif" opacity="0.8">?</text>
-            <text x="130" y="115" text-anchor="middle" fill="#888" font-size="13" font-family="sans-serif">Votre design</text>
-            <circle cx="130" cy="80" r="55" stroke="#c9a84c" stroke-width="1" stroke-dasharray="5,4" fill="none"/>
-          </svg>
-          <span class="badge badge-custom">Sur mesure</span>
-        </div>
-        <div class="card-body">
-          <h3>Sur Mesure</h3>
-          <p>Vous avez une idée ? Hugo peut la réaliser. Envoyez votre design, on s'occupe du reste.</p>
-          <div class="card-meta">
-            <span class="material">Au choix</span>
-            <span class="price">À partir de 50 €</span>
-          </div>
-          <button class="btn-secondary" onclick="openModal('Commande Sur Mesure', 'Hugo réalise votre couteau unique selon vos spécifications. Choisissez la forme de lame, la couleur du manche, le matériau d\'impression et les gravures. Délai de fabrication : 5 à 10 jours ouvrés. Contactez-nous pour démarrer votre projet.', 'Au choix', 'À partir de 50 €', 'custom')">Voir les détails</button>
-        </div>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- FABRICATION -->
-  <section class="fabrication" id="fabrication">
-    <div class="section-header">
-      <h2>Le Processus de Fabrication</h2>
-      <p>De l'idée à la lame, en quelques étapes</p>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <div class="step-content">
-          <h3>Conception 3D</h3>
-          <p>Chaque couteau est modélisé dans un logiciel CAO, avec une attention particulière à l'ergonomie et aux proportions.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <div class="step-content">
-          <h3>Impression</h3>
-          <p>L'imprimante 3D d'Hugo produit chaque pièce couche par couche, avec une précision au dixième de millimètre.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <div class="step-content">
-          <h3>Finition</h3>
-          <p>Ponçage, peinture ou métallisation selon le modèle. Chaque pièce est vérifiée et validée à la main.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">04</div>
-        <div class="step-content">
-          <h3>Livraison</h3>
-          <p>Emballage soigné et expédition sécurisée. Les couteaux de collection sont livrés avec un certificat d'authenticité.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TEMOIGNAGES -->
-  <section class="temoignages">
-    <div class="section-header">
-      <h2>Ce que disent nos clients</h2>
-      <p>Plus de 50 créations livrées — des clients ravis</p>
-    </div>
-    <div class="temoignages-grid">
-      <div class="temoignage">
-        <div class="stars">★★★★★</div>
-        <p class="temoignage-text">"Le couteau sur mesure que j'ai commandé pour mon père est absolument sublime. Gravure parfaite, finition impeccable. Il a été bluffé par la qualité de l'impression."</p>
-        <div class="temoignage-author">
-          <div class="author-avatar">T</div>
-          <div>
-            <span class="author-name">Thomas M.</span>
-            <span class="author-detail">Couteau Sur Mesure</span>
-          </div>
-        </div>
-      </div>
-      <div class="temoignage">
-        <div class="stars">★★★★★</div>
-        <p class="temoignage-text">"J'ai offert Le Doré pour un anniversaire. L'écrin de livraison est magnifique et le couteau est une vraie pièce d'art. Je recommande sans la moindre hésitation."</p>
-        <div class="temoignage-author">
-          <div class="author-avatar">C</div>
-          <div>
-            <span class="author-name">Camille D.</span>
-            <span class="author-detail">Le Doré — Pièce de collection</span>
-          </div>
-        </div>
-      </div>
-      <div class="temoignage">
-        <div class="stars">★★★★★</div>
-        <p class="temoignage-text">"Hugo a réalisé un couteau à mon effigie pour ma collection. Les échanges ont été rapides, le produit livré en 6 jours. Qualité professionnelle, prix très raisonnable."</p>
-        <div class="temoignage-author">
-          <div class="author-avatar">M</div>
-          <div>
-            <span class="author-name">Marc R.</span>
-            <span class="author-detail">Commande personnalisée</span>
+          <div class="stat-card">
+            <span class="stat-value">Linux</span>
+            <span class="stat-label">Env. principal</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="cta-section">
-    <h2>Prêt à passer commande ?</h2>
-    <p>Rejoignez plus de 50 clients satisfaits. Réponse d'Hugo garantie sous 24h.</p>
-    <div class="cta-buttons">
-      <a href="#catalogue" class="btn-primary">Voir le catalogue</a>
-      <a href="#contact" class="btn-outline">Commander sur mesure</a>
+  <!-- SKILLS -->
+  <section class="skills section" id="skills">
+    <div class="container">
+      <div class="section-label reveal"><span class="label-mono">// 02</span> Compétences</div>
+      <h2 class="section-title reveal">Stack technique</h2>
+      <div class="skills-grid">
+        <div class="skill-card reveal">
+          <div class="skill-card-header">
+            <div class="skill-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <h3>Langages</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">Python</span>
+            <span class="skill-tag">JavaScript</span>
+            <span class="skill-tag">C</span>
+            <span class="skill-tag">Java</span>
+            <span class="skill-tag">Bash</span>
+            <span class="skill-tag">SQL</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <div class="skill-card-header">
+            <div class="skill-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h3>DevOps & Systèmes</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">Linux</span>
+            <span class="skill-tag">Docker</span>
+            <span class="skill-tag">Git</span>
+            <span class="skill-tag">CI/CD</span>
+            <span class="skill-tag">GitHub Actions</span>
+            <span class="skill-tag">Nginx</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <div class="skill-card-header">
+            <div class="skill-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <h3>Backend & BDD</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">Node.js</span>
+            <span class="skill-tag">Flask</span>
+            <span class="skill-tag">REST API</span>
+            <span class="skill-tag">PostgreSQL</span>
+            <span class="skill-tag">MySQL</span>
+          </div>
+        </div>
+        <div class="skill-card reveal">
+          <div class="skill-card-header">
+            <div class="skill-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Cybersécurité</h3>
+          </div>
+          <div class="skill-tags">
+            <span class="skill-tag">Kali Linux</span>
+            <span class="skill-tag">OWASP Top 10</span>
+            <span class="skill-tag">CTF</span>
+            <span class="skill-tag">Wireshark</span>
+            <span class="skill-tag">Nmap</span>
+            <span class="skill-tag">Sécurité réseau</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="projects section" id="projects">
+    <div class="container">
+      <div class="section-label reveal"><span class="label-mono">// 03</span> Projets</div>
+      <h2 class="section-title reveal">Ce que j'ai construit</h2>
+      <div class="projects-grid">
+
+        <!-- Card 1: Apex 3D -->
+        <article class="project-card featured reveal">
+          <div class="card-top">
+            <div class="featured-badge">★ Featured</div>
+            <div class="project-links">
+              <a href="https://vincent-p-essy.github.io/Apex_3D/" target="_blank" rel="noopener" aria-label="Voir le site">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+              <a href="https://github.com/Vincent-P-essy/Apex_3D" target="_blank" rel="noopener" aria-label="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="project-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l3 3-3 3"/><line x1="13" y1="14" x2="17" y2="14"/></svg>
+          </div>
+          <div class="project-status status-deployed">Déployé</div>
+          <h3>Apex 3D — Site e-commerce artisanal</h3>
+          <p>Site vitrine full-stack statique pour un artisan. Catalogue produit avec filtres dynamiques, chatbot NLP maison (algorithme Levenshtein), modal dynamique, design responsive premium. Déployé sur GitHub Pages.</p>
+          <div class="project-tech">
+            <span>HTML5</span>
+            <span>CSS3</span>
+            <span>JavaScript</span>
+            <span>GitHub Pages</span>
+            <span>NLP</span>
+          </div>
+        </article>
+
+        <!-- Card 2: Network Scanner -->
+        <article class="project-card reveal">
+          <div class="card-top">
+            <div class="project-links">
+              <a href="https://github.com/Vincent-P-essy" target="_blank" rel="noopener" aria-label="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="project-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+          </div>
+          <div class="project-status status-wip">En cours</div>
+          <h3>Network Scanner CLI</h3>
+          <p>Outil de reconnaissance réseau en Python. Scan de ports TCP/UDP, détection de services, export JSON/CSV. Utilise sockets raw et Scapy pour l'analyse de paquets réseau.</p>
+          <div class="project-tech">
+            <span>Python</span>
+            <span>Scapy</span>
+            <span>Sockets</span>
+            <span>CLI</span>
+          </div>
+        </article>
+
+        <!-- Card 3: CI/CD Pipeline -->
+        <article class="project-card reveal">
+          <div class="card-top">
+            <div class="project-links">
+              <a href="https://github.com/Vincent-P-essy" target="_blank" rel="noopener" aria-label="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="project-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg>
+          </div>
+          <div class="project-status status-deployed">Déployé</div>
+          <h3>Pipeline CI/CD Dockerisé</h3>
+          <p>Pipeline d'intégration continue avec GitHub Actions, tests automatisés, build Docker et déploiement sur VPS. Containerisation d'une API REST Flask avec Nginx en reverse proxy.</p>
+          <div class="project-tech">
+            <span>Docker</span>
+            <span>GitHub Actions</span>
+            <span>Flask</span>
+            <span>Nginx</span>
+            <span>Linux</span>
+          </div>
+        </article>
+
+        <!-- Card 4: CTF Writeups -->
+        <article class="project-card reveal">
+          <div class="card-top">
+            <div class="project-links">
+              <a href="https://github.com/Vincent-P-essy" target="_blank" rel="noopener" aria-label="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="project-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="project-status status-active">Actif</div>
+          <h3>CTF Writeups & Challenges</h3>
+          <p>Résolution de challenges cybersécurité (TryHackMe, Root-Me, HackTheBox). Exploitation web (XSS, SQLi, IDOR), reverse engineering, cryptographie et forensics. Writeups documentés.</p>
+          <div class="project-tech">
+            <span>Kali Linux</span>
+            <span>Burp Suite</span>
+            <span>Python</span>
+            <span>Web Security</span>
+            <span>Crypto</span>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PARCOURS -->
+  <section class="parcours section" id="parcours">
+    <div class="container">
+      <div class="section-label reveal"><span class="label-mono">// 04</span> Parcours</div>
+      <h2 class="section-title reveal">Mon parcours</h2>
+      <div class="timeline">
+        <div class="timeline-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-date">2025 — présent</div>
+          <div class="tl-content">
+            <h3>Formation informatique</h3>
+            <span class="tl-lieu">BTS/Licence · France</span>
+            <p>Algorithmique, réseaux, bases de données, développement web, sécurité et DevOps. Formation pratique orientée projets.</p>
+          </div>
+        </div>
+        <div class="timeline-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-date">2024</div>
+          <div class="tl-content">
+            <h3>Autoformation intensive</h3>
+            <span class="tl-lieu">Self-directed · En ligne</span>
+            <p>Python avancé, administration Linux, Docker, orchestration de conteneurs. Challenges CTF sur TryHackMe et Root-Me.</p>
+          </div>
+        </div>
+        <div class="timeline-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-date">2022</div>
+          <div class="tl-content">
+            <h3>Baccalauréat</h3>
+            <span class="tl-lieu">Lycée · France</span>
+            <p>Option NSI (Numérique et Sciences Informatiques). Premiers pas en Python, découverte des algorithmes et de la logique de programmation.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- CONTACT -->
-  <section class="contact" id="contact">
-    <div class="contact-inner">
-      <div class="contact-text">
-        <h2>Contactez Hugo</h2>
-        <p>Pour une commande personnalisée, une question ou simplement pour en savoir plus sur les créations d'Hugo Pouilliat.</p>
-        <ul class="contact-info">
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            <span>contact@hugopouilliat.fr</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>France — Livraison nationale</span>
-          </li>
-        </ul>
+  <section class="contact section" id="contact">
+    <div class="container">
+      <div class="section-label reveal"><span class="label-mono">// 05</span> Contact</div>
+      <h2 class="section-title reveal">Travaillons ensemble</h2>
+      <p class="contact-subtitle reveal">Alternance, stage, projet freelance ou simple question ? Je lis tous mes messages.</p>
+      <div class="contact-grid">
+        <div class="contact-cards reveal">
+          <a href="mailto:vincent.plessy12@gmail.com" class="contact-card">
+            <div class="cc-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="cc-info">
+              <span class="cc-label">Email</span>
+              <span class="cc-value">vincent.plessy12@gmail.com</span>
+            </div>
+            <svg class="cc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="https://github.com/Vincent-P-essy" target="_blank" rel="noopener" class="contact-card">
+            <div class="cc-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            </div>
+            <div class="cc-info">
+              <span class="cc-label">GitHub</span>
+              <span class="cc-value">Vincent-P-essy</span>
+            </div>
+            <svg class="cc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+          <a href="https://linkedin.com/in/vincent-plessy" target="_blank" rel="noopener" class="contact-card">
+            <div class="cc-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </div>
+            <div class="cc-info">
+              <span class="cc-label">LinkedIn</span>
+              <span class="cc-value">vincent-plessy</span>
+            </div>
+            <svg class="cc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+        <form class="contact-form reveal" onsubmit="submitForm(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="c-name">Nom</label>
+              <input type="text" id="c-name" placeholder="Votre nom" required />
+            </div>
+            <div class="form-group">
+              <label for="c-email">Email</label>
+              <input type="email" id="c-email" placeholder="votre@email.fr" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="c-subject">Objet</label>
+            <input type="text" id="c-subject" placeholder="Objet de votre message" required />
+          </div>
+          <div class="form-group">
+            <label for="c-message">Message</label>
+            <textarea id="c-message" rows="5" placeholder="Votre message…" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Envoyer le message</button>
+          <p class="form-success" id="form-success">Message envoyé ! Je vous répondrai rapidement.</p>
+        </form>
       </div>
-      <form class="contact-form" onsubmit="submitForm(event)">
-        <div class="form-group">
-          <label for="name">Nom</label>
-          <input type="text" id="name" placeholder="Votre nom" required />
-        </div>
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" placeholder="votre@email.fr" required />
-        </div>
-        <div class="form-group">
-          <label for="message">Message</label>
-          <textarea id="message" rows="5" placeholder="Votre message ou description de commande…" required></textarea>
-        </div>
-        <button type="submit" class="btn-primary">Envoyer</button>
-        <p class="form-success" id="form-success">Message envoyé ! Hugo vous répondra rapidement.</p>
-      </form>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer>
     <div class="footer-inner">
-      <div class="footer-logo">
-        <img src="apex-3d.png" alt="Apex 3D" class="logo-icon" />
-        <span>Apex 3D</span>
+      <div class="footer-logo">&lt;VP/&gt;</div>
+      <p class="footer-tagline">Conçu et développé par <strong>Vincent Plessy</strong></p>
+      <div class="footer-links">
+        <a href="https://github.com/Vincent-P-essy" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/vincent-plessy" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="mailto:vincent.plessy12@gmail.com">Email</a>
       </div>
-      <p class="footer-tagline">Couteaux 3D — Artisanat numérique français</p>
-      <p class="footer-copy">&copy; 2026 Apex 3D — Hugo Pouilliat. Tous droits réservés.</p>
-      <p class="footer-credit">Site réalisé par <a href="mailto:vincent.plessy12@gmail.com">Vincent Plessy</a></p>
+      <p class="footer-copy">&copy; 2026 Vincent Plessy</p>
     </div>
   </footer>
 
-  <!-- MODAL -->
-  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
-    <div class="modal" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeModal()">&#10005;</button>
-      <div class="modal-badge" id="modal-badge"></div>
-      <h2 id="modal-title"></h2>
-      <p id="modal-desc"></p>
-      <div class="modal-meta">
-        <div>
-          <span class="meta-label">Matériaux</span>
-          <span id="modal-material"></span>
-        </div>
-        <div>
-          <span class="meta-label">Prix</span>
-          <span id="modal-price" class="modal-price"></span>
-        </div>
-      </div>
-      <a href="#contact" class="btn-primary" onclick="closeModal()">Commander / Renseignements</a>
-    </div>
-  </div>
-
-  <!-- CHATBOT -->
-  <div class="chat-bubble" id="chat-bubble" onclick="toggleChat()" title="Assistant Hugo">
-    <svg id="chat-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <svg id="chat-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    <span class="chat-notif">1</span>
-  </div>
-
-  <div class="chat-window" id="chat-window">
-    <div class="chat-header">
-      <div class="chat-avatar">H</div>
-      <div class="chat-header-info">
-        <span class="chat-name">Assistant Hugo</span>
-        <span class="chat-status">En ligne</span>
-      </div>
-    </div>
-    <div class="chat-messages" id="chat-messages">
-      <div class="chat-msg bot">
-        <span>Bonjour ! 👋 Je suis l'assistant de Hugo Pouilliat. Je peux vous renseigner sur nos couteaux 3D, les prix, les commandes sur mesure ou la livraison. Comment puis-je vous aider ?</span>
-      </div>
-      <div class="chat-suggestions">
-        <button onclick="askQuestion('Quels couteaux sont disponibles ?')">🔪 Catalogue</button>
-        <button onclick="askQuestion('Quels sont vos prix ?')">💶 Prix</button>
-        <button onclick="askQuestion('Comment commander ?')">📦 Commander</button>
-        <button onclick="askQuestion('Faites-vous du sur mesure ?')">✏️ Sur mesure</button>
-      </div>
-    </div>
-    <div class="chat-input-area">
-      <input type="text" id="chat-input" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter') sendMessage()" />
-      <button onclick="sendMessage()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
-    </div>
-  </div>
-
   <script src="script.js"></script>
-  <script src="chatbot.js"></script>
 </body>
 </html>
