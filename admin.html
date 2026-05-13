@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Apex 3D</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { cursor: auto !important; }
+    #admin-login { position: fixed; inset: 0; background: var(--dark); z-index: 99999; display: flex; align-items: center; justify-content: center; }
+    .login-box { background: var(--dark-3); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; width: 360px; text-align: center; }
+    .login-box h1 { font-family: var(--font-display); font-size: 1.75rem; color: var(--cream); margin-bottom: 0.5rem; }
+    .login-box p { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 2rem; }
+    .login-box input { width: 100%; background: var(--dark); border: 1px solid var(--border-dim); border-radius: var(--radius); color: var(--cream); padding: 0.75rem 1rem; font-size: 0.9rem; margin-bottom: 1rem; outline: none; text-align: center; letter-spacing: 0.2em; }
+    .login-box input:focus { border-color: var(--gold); }
+    .login-err { color: #f56464; font-size: 0.8rem; margin-top: 0.5rem; display: none; }
+
+    .admin-page { min-height: 100vh; padding: calc(var(--nav-h) + 2rem) 2rem 4rem; }
+    .admin-container { max-width: 1100px; margin: 0 auto; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .admin-header h1 { font-family: var(--font-display); font-size: 1.75rem; color: var(--cream); }
+    .admin-header p { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold); letter-spacing: 0.15em; }
+    .admin-actions { display: flex; gap: 0.75rem; }
+    .btn-admin-save { background: var(--gold); color: var(--dark); border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background var(--transition); }
+    .btn-admin-save:hover { background: var(--gold-light); }
+    .btn-admin-reset { background: transparent; color: rgba(245,100,100,0.7); border: 1px solid rgba(245,100,100,0.3); padding: 0.75rem 1.5rem; border-radius: var(--radius); font-size: 0.85rem; cursor: pointer; transition: border-color var(--transition), color var(--transition); }
+    .btn-admin-reset:hover { border-color: rgba(245,100,100,0.7); color: #f56464; }
+
+    .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+    .product-card-admin { background: var(--dark-3); border: 1px solid var(--border-dim); border-radius: var(--radius-lg); padding: 1.5rem; transition: border-color var(--transition); }
+    .product-card-admin:hover { border-color: var(--border); }
+    .product-admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .product-admin-id { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gold); letter-spacing: 0.2em; text-transform: uppercase; background: var(--gold-dim); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid var(--border); }
+    .product-admin-toggle { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.65rem; color: var(--cream-dim); }
+    .toggle-switch { position: relative; width: 36px; height: 20px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--dark-4); border: 1px solid var(--border-dim); border-radius: 20px; cursor: pointer; transition: background var(--transition); }
+    .toggle-slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 2px; top: 2px; background: var(--cream-dim); border-radius: 50%; transition: transform var(--transition); }
+    .toggle-switch input:checked + .toggle-slider { background: rgba(201,168,76,0.3); border-color: var(--gold); }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); background: var(--gold); }
+    .admin-field { margin-bottom: 0.875rem; }
+    .admin-field label { display: block; font-family: var(--font-mono); font-size: 0.65rem; color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .admin-field input, .admin-field textarea { width: 100%; background: var(--dark); border: 1px solid var(--border-dim); border-radius: var(--radius); color: var(--cream); padding: 0.6rem 0.875rem; font-size: 0.875rem; font-family: var(--font-body); outline: none; transition: border-color var(--transition); }
+    .admin-field input:focus, .admin-field textarea:focus { border-color: var(--gold); }
+    .admin-field textarea { min-height: 80px; resize: vertical; }
+    .admin-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .stripe-field input { font-family: var(--font-mono); font-size: 0.78rem; }
+
+    .admin-config { background: var(--dark-3); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; margin-bottom: 2rem; }
+    .admin-config h2 { font-family: var(--font-display); font-size: 1.25rem; color: var(--cream); margin-bottom: 0.5rem; }
+    .admin-config p { font-size: 0.82rem; color: var(--cream-dim); margin-bottom: 1.5rem; }
+    .admin-config-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .config-badge { display: inline-block; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; padding: 0.15rem 0.5rem; border-radius: 4px; margin-left: 0.5rem; }
+    .config-badge.ok { background: rgba(76,175,80,0.2); color: #81c784; border: 1px solid rgba(76,175,80,0.3); }
+    .config-badge.missing { background: rgba(245,100,100,0.15); color: #f58484; border: 1px solid rgba(245,100,100,0.3); }
+
+    .save-toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--dark-3); border: 1px solid var(--gold); color: var(--gold); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.1em; padding: 0.75rem 1.5rem; border-radius: var(--radius); z-index: 9999; transition: transform 0.3s ease; }
+    .save-toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 768px) { .products-grid { grid-template-columns: 1fr; } .admin-config-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="admin-login">
+    <div class="login-box">
+      <h1>APEX<span style="color:var(--gold)">·</span>3D</h1>
+      <p>ADMIN — ACCÈS RESTREINT</p>
+      <input type="password" id="admin-pwd" placeholder="Mot de passe" autocomplete="current-password" />
+      <button class="btn-admin-save" onclick="checkLogin()" style="width:100%">Connexion</button>
+      <p class="login-err" id="login-err">Mot de passe incorrect.</p>
+    </div>
+  </div>
+
+  <header id="navbar" class="scrolled">
+    <nav class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-text">APEX<span class="logo-dot">·</span>3D</span>
+        <span class="logo-tagline">Panel Admin</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" target="_blank">Voir le site</a></li>
+        <li><button onclick="adminLogout()" style="background:none;border:none;color:var(--cream-dim);font-size:0.875rem;cursor:pointer;">Déconnexion</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="admin-page" id="admin-main" style="display:none">
+    <div class="admin-container">
+
+      <div class="admin-header">
+        <div>
+          <h1>Gestion des produits</h1>
+          <p>APEX 3D · Tableau de bord</p>
+        </div>
+        <div class="admin-actions">
+          <button class="btn-admin-reset" onclick="resetToDefaults()">Réinitialiser</button>
+          <button class="btn-admin-save" onclick="saveAll()">Enregistrer tout</button>
+        </div>
+      </div>
+
+      <!-- CONFIG CHECK -->
+      <div class="admin-config" id="config-status">
+        <h2>État de la configuration</h2>
+        <p>Vérifiez que vos services externes sont bien configurés dans <code style="color:var(--gold);font-family:var(--font-mono);font-size:0.85em;">script.js</code></p>
+        <div class="admin-config-grid" id="config-badges"></div>
+      </div>
+
+      <!-- PRODUITS -->
+      <div class="products-grid" id="products-grid"></div>
+
+      <!-- STRIPE LINKS -->
+      <div class="admin-config">
+        <h2>Liens Stripe</h2>
+        <p>Remplacez les placeholders par vos liens de paiement Stripe. Créez-les sur <a href="https://dashboard.stripe.com/payment-links" target="_blank" rel="noopener" style="color:var(--gold)">dashboard.stripe.com/payment-links</a></p>
+        <div id="stripe-fields"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="save-toast" id="save-toast">✓ Modifications enregistrées</div>
+
+  <script>
+  /* Mot de passe admin stocké localement (simple protection) */
+  var ADMIN_PASSWORD = 'apex3d2025'; // Changez ce mot de passe !
+
+  var DEFAULTS = {
+    classique: { name: 'Le Classique',  price: '35€',    rawPrice: 35,  material: 'PLA+',           desc: 'La référence de la coutellerie numérique. Lame longue de chef en PLA+ haute résistance, profil de coupe idéal pour les cuisines du quotidien.', active: true },
+    ombre:     { name: "L'Ombre",       price: '45€',    rawPrice: 45,  material: 'PETG',           desc: 'Un tactique compact au profil clip-point acéré. Lame en PETG noir mat ultra-résistant aux chocs.', active: true },
+    dore:      { name: 'Le Doré',       price: '60€',    rawPrice: 60,  material: 'PLA Métallique', desc: "La pièce maîtresse. Entièrement imprimée en PLA Métallique doré, ornée de gravures géométriques. Livrée dans un écrin noir capitonné.", active: true },
+    santoku:   { name: 'Le Santoku',    price: '40€',    rawPrice: 40,  material: 'PLA+',           desc: "L'hommage au savoir-faire japonais. Lame santoku avec alvéoles anti-adhésion. Manche bois synthétique chaud avec insert décoratif doré.", active: true },
+    ranger:    { name: 'Le Ranger',     price: '55€',    rawPrice: 55,  material: 'ABS',            desc: 'Construit pour résister. Lame drop-point en ABS haute résistance. Scie intégrée sur le dos de la lame.', active: true },
+    custom:    { name: 'Sur Mesure',    price: 'dès 50€', rawPrice: 50, material: 'Au choix',       desc: 'Votre vision, nos mains. Forme de lame, couleur du filament, texte gravé. Chaque pièce unique.', active: true }
+  };
+
+  var DEFAULT_STRIPE = {
+    classique: '', ombre: '', dore: '', santoku: '', ranger: '', custom: ''
+  };
+
+  function checkLogin() {
+    var pwd = document.getElementById('admin-pwd').value;
+    if (pwd === ADMIN_PASSWORD) {
+      localStorage.setItem('apex3d_admin_auth', btoa(ADMIN_PASSWORD));
+      document.getElementById('admin-login').style.display = 'none';
+      document.getElementById('admin-main').style.display = 'block';
+      initAdmin();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+    }
+  }
+
+  document.getElementById('admin-pwd').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkLogin();
+  });
+
+  function adminLogout() {
+    localStorage.removeItem('apex3d_admin_auth');
+    location.reload();
+  }
+
+  function isAuthed() {
+    return localStorage.getItem('apex3d_admin_auth') === btoa(ADMIN_PASSWORD);
+  }
+
+  function initAdmin() {
+    renderConfigBadges();
+    renderProducts();
+    renderStripeFields();
+  }
+
+  function renderConfigBadges() {
+    var stored = JSON.parse(localStorage.getItem('apex3d_config') || '{}');
+    var items = [
+      { label: 'EmailJS', key: 'emailjs_ok',  hint: 'Configurez serviceId, templateId, publicKey dans script.js' },
+      { label: 'GA4',     key: 'ga4_ok',      hint: 'Configurez measurementId dans script.js' },
+      { label: 'Stripe',  key: 'stripe_ok',   hint: 'Ajoutez vos liens Stripe ci-dessous' },
+      { label: 'WhatsApp',key: 'whatsapp_ok', hint: 'Configurez votre numéro dans script.js' }
+    ];
+    var html = items.map(function(i) {
+      var ok = stored[i.key];
+      return '<div style="background:var(--dark);border:1px solid var(--border-dim);border-radius:var(--radius);padding:0.875rem;"><span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--cream);">' + i.label + '</span><span class="config-badge ' + (ok ? 'ok' : 'missing') + '">' + (ok ? '✓ OK' : '⚠ À configurer') + '</span><p style="font-size:0.75rem;color:var(--cream-dim);margin-top:0.4rem;line-height:1.5;">' + i.hint + '</p></div>';
+    }).join('');
+    document.getElementById('config-badges').innerHTML = html;
+  }
+
+  function getProducts() {
+    var saved = localStorage.getItem('apex3d_products_admin');
+    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULTS));
+  }
+
+  function renderProducts() {
+    var products = getProducts();
+    var grid = document.getElementById('products-grid');
+    grid.innerHTML = Object.keys(products).map(function(id) {
+      var p = products[id];
+      return '<div class="product-card-admin">' +
+        '<div class="product-admin-header">' +
+          '<span class="product-admin-id">' + id + '</span>' +
+          '<label class="product-admin-toggle"><label class="toggle-switch"><input type="checkbox" id="active_' + id + '" ' + (p.active ? 'checked' : '') + '><span class="toggle-slider"></span></label>Actif</label>' +
+        '</div>' +
+        '<div class="admin-field"><label>Nom du produit</label><input type="text" id="name_' + id + '" value="' + p.name + '" /></div>' +
+        '<div class="admin-field-row">' +
+          '<div class="admin-field"><label>Prix affiché</label><input type="text" id="price_' + id + '" value="' + p.price + '" /></div>' +
+          '<div class="admin-field"><label>Matière</label><input type="text" id="material_' + id + '" value="' + p.material + '" /></div>' +
+        '</div>' +
+        '<div class="admin-field"><label>Description</label><textarea id="desc_' + id + '">' + p.desc + '</textarea></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderStripeFields() {
+    var saved = JSON.parse(localStorage.getItem('apex3d_stripe_links') || '{}');
+    var links = Object.assign({}, DEFAULT_STRIPE, saved);
+    var ids = Object.keys(links);
+    document.getElementById('stripe-fields').innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.875rem;">' +
+      ids.map(function(id) {
+        return '<div class="admin-field stripe-field"><label>' + id + '</label><input type="text" id="stripe_' + id + '" value="' + (links[id] || '') + '" placeholder="https://buy.stripe.com/..." /></div>';
+      }).join('') + '</div>';
+  }
+
+  function saveAll() {
+    var products = getProducts();
+    Object.keys(products).forEach(function(id) {
+      products[id].name     = document.getElementById('name_' + id).value;
+      products[id].price    = document.getElementById('price_' + id).value;
+      products[id].material = document.getElementById('material_' + id).value;
+      products[id].desc     = document.getElementById('desc_' + id).value;
+      products[id].active   = document.getElementById('active_' + id).checked;
+    });
+    localStorage.setItem('apex3d_products_admin', JSON.stringify(products));
+
+    var stripeLinks = {};
+    Object.keys(DEFAULT_STRIPE).forEach(function(id) {
+      var input = document.getElementById('stripe_' + id);
+      if (input) stripeLinks[id] = input.value.trim();
+    });
+    localStorage.setItem('apex3d_stripe_links', JSON.stringify(stripeLinks));
+
+    var toast = document.getElementById('save-toast');
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
+  }
+
+  function resetToDefaults() {
+    if (!confirm('Réinitialiser tous les produits aux valeurs par défaut ?')) return;
+    localStorage.removeItem('apex3d_products_admin');
+    renderProducts();
+  }
+
+  // Auto-login si session active
+  if (isAuthed()) {
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-main').style.display = 'block';
+    initAdmin();
+  }
+  </script>
+</body>
+</html>

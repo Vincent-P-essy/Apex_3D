@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Apex 3D | Couteliers numériques</title>
+  <meta name="description" content="Le blog Apex 3D — guides, conseils et coulisses de l'impression 3D appliquée à la coutelerie." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .blog-hero { padding: calc(var(--nav-h) + 4rem) 0 4rem; text-align: center; }
+    .blog-hero h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: var(--cream); }
+    .blog-hero p { font-size: 1rem; color: var(--cream-dim); margin-top: 1rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .blog-grid { max-width: 1100px; margin: 0 auto; padding: 0 2rem 6rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+    .blog-card { background: var(--dark-3); border: 1px solid var(--border-dim); border-radius: var(--radius-lg); overflow: hidden; transition: border-color var(--transition), box-shadow var(--transition); text-decoration: none; display: flex; flex-direction: column; }
+    .blog-card:hover { border-color: var(--border); box-shadow: 0 0 30px rgba(201,168,76,0.1), 0 8px 32px rgba(0,0,0,0.4); }
+    .blog-card-img { height: 200px; background: var(--dark-2); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .blog-card-img::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(201,168,76,0.1) 0%, transparent 70%); }
+    .blog-card-img svg { position: relative; z-index: 1; opacity: 0.7; transition: transform var(--transition-slow), opacity var(--transition); }
+    .blog-card:hover .blog-card-img svg { transform: scale(1.1); opacity: 1; }
+    .blog-card-body { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+    .blog-card-tag { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gold); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .blog-card-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--cream); line-height: 1.3; margin-bottom: 0.75rem; }
+    .blog-card-excerpt { font-size: 0.85rem; color: var(--cream-dim); line-height: 1.65; flex: 1; }
+    .blog-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-dim); }
+    .blog-card-date { font-family: var(--font-mono); font-size: 0.68rem; color: rgba(245,240,232,0.3); }
+    .blog-read-more { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold); letter-spacing: 0.1em; }
+    @media (max-width: 900px) { .blog-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .blog-grid { grid-template-columns: 1fr; } }
+
+    /* Article page */
+    .article-page { max-width: 720px; margin: 0 auto; padding: calc(var(--nav-h) + 4rem) 2rem 6rem; }
+    .article-tag { font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold); letter-spacing: 0.25em; text-transform: uppercase; }
+    .article-title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; color: var(--cream); line-height: 1.2; margin: 1rem 0 0.5rem; }
+    .article-meta { font-family: var(--font-mono); font-size: 0.7rem; color: rgba(245,240,232,0.35); margin-bottom: 2.5rem; }
+    .article-body h2 { font-family: var(--font-display); font-size: 1.35rem; color: var(--gold); margin: 2rem 0 0.75rem; }
+    .article-body p { font-size: 0.95rem; color: var(--cream-dim); line-height: 1.8; margin-bottom: 1.25rem; }
+    .article-body ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; }
+    .article-body ul li { font-size: 0.92rem; color: var(--cream-dim); line-height: 1.7; margin-bottom: 0.4rem; }
+    .article-body strong { color: var(--cream); }
+    .article-callout { background: var(--dark-3); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin: 1.5rem 0; }
+    .article-callout p { margin: 0; font-size: 0.9rem; }
+    .back-to-blog { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold); text-decoration: none; margin-bottom: 2rem; border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: var(--radius); transition: background var(--transition); }
+    .back-to-blog:hover { background: var(--gold-dim); }
+  </style>
+</head>
+<body>
+
+  <header id="navbar" class="scrolled">
+    <nav class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-text">APEX<span class="logo-dot">·</span>3D</span>
+        <span class="logo-tagline">Couteliers numériques</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html#catalogue">Catalogue</a></li>
+        <li><a href="index.html#contact">Commander</a></li>
+        <li><a href="blog.html" style="color:var(--gold)">Blog</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="blog-hero section-alt">
+    <div class="container">
+      <span class="section-tag">Actualités & Guides</span>
+      <h1 class="reveal">Le Blog <span class="gradient-text">Apex 3D</span></h1>
+      <p class="reveal" data-delay="100">Coulisses de la fabrication, guides matériaux, conseils d'entretien et histoires de pièces uniques.</p>
+    </div>
+  </section>
+
+  <div class="blog-grid">
+
+    <!-- Article 1 -->
+    <a href="#article-1" class="blog-card reveal" id="card-1">
+      <div class="blog-card-img">
+        <svg viewBox="0 0 200 200" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="80" width="160" height="8" rx="4" fill="#c9a84c" opacity="0.6"/>
+          <rect x="20" y="96" width="130" height="6" rx="3" fill="#c9a84c" opacity="0.35"/>
+          <rect x="20" y="110" width="145" height="6" rx="3" fill="#c9a84c" opacity="0.35"/>
+          <rect x="20" y="124" width="100" height="6" rx="3" fill="#c9a84c" opacity="0.25"/>
+          <path d="M100 30 L108 52 L132 52 L113 66 L120 88 L100 74 L80 88 L87 66 L68 52 L92 52 Z" fill="#c9a84c" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Fabrication</span>
+        <h2 class="blog-card-title">Comment nous fabriquons nos couteaux — de l'idée à la livraison</h2>
+        <p class="blog-card-excerpt">De la modélisation 3D à la finition à la main, découvrez les 4 étapes qui font de chaque couteau Apex 3D une pièce unique.</p>
+        <div class="blog-card-footer">
+          <span class="blog-card-date">15 mars 2025</span>
+          <span class="blog-read-more">Lire →</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Article 2 -->
+    <a href="#article-2" class="blog-card reveal" data-delay="100" id="card-2">
+      <div class="blog-card-img">
+        <svg viewBox="0 0 200 200" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="70" cy="100" r="35" fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.7"/>
+          <circle cx="130" cy="100" r="35" fill="none" stroke="#e8c96d" stroke-width="2" opacity="0.7"/>
+          <text x="70" y="105" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#c9a84c">PLA+</text>
+          <text x="130" y="105" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#e8c96d">ABS</text>
+          <text x="100" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="rgba(201,168,76,0.5)">PETG</text>
+        </svg>
+      </div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Matériaux</span>
+        <h2 class="blog-card-title">PLA+, ABS, PETG — quel filament pour quel couteau ?</h2>
+        <p class="blog-card-excerpt">Guide complet des matériaux d'impression 3D utilisés chez Apex 3D. Résistance, finition, légèreté : on compare tout.</p>
+        <div class="blog-card-footer">
+          <span class="blog-card-date">2 avril 2025</span>
+          <span class="blog-read-more">Lire →</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Article 3 -->
+    <a href="#article-3" class="blog-card reveal" data-delay="200" id="card-3">
+      <div class="blog-card-img">
+        <svg viewBox="0 0 200 200" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 30 L114 60 L148 60 L122 78 L132 110 L100 92 L68 110 L78 78 L52 60 L86 60 Z" fill="none" stroke="#c9a84c" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="100" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(201,168,76,0.7)">SUR</text>
+          <text x="100" y="116" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(201,168,76,0.7)">MESURE</text>
+          <path d="M60 150 L140 150" stroke="#c9a84c" stroke-width="1" opacity="0.4"/>
+          <text x="100" y="168" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="rgba(201,168,76,0.35)">VOTRE NOM ICI</text>
+        </svg>
+      </div>
+      <div class="blog-card-body">
+        <span class="blog-card-tag">Guide d'achat</span>
+        <h2 class="blog-card-title">5 idées de personnalisation pour un couteau sur mesure inoubliable</h2>
+        <p class="blog-card-excerpt">Prénom, date, motif géométrique, blason familial… Voici nos 5 meilleures idées de gravure pour une pièce vraiment unique.</p>
+        <div class="blog-card-footer">
+          <span class="blog-card-date">20 avril 2025</span>
+          <span class="blog-read-more">Lire →</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Article 1 complet -->
+  <div id="article-1" style="display:none"></div>
+  <article class="article-page" id="article-content-1" style="display:none">
+    <a href="blog.html" class="back-to-blog">← Retour au blog</a>
+    <span class="article-tag">Fabrication</span>
+    <h1 class="article-title">Comment nous fabriquons nos couteaux — de l'idée à la livraison</h1>
+    <p class="article-meta">Par Vincent Plessy · 15 mars 2025 · 5 min de lecture</p>
+    <div class="article-body">
+      <p>Chaque couteau Apex 3D commence par une idée, un concept, une intention. Derrière chaque lame se cache un processus artisanal rigoureux que nous avons mis plusieurs mois à affiner. Voici comment nous travaillons, étape par étape.</p>
+      <h2>Étape 1 — Conception 3D</h2>
+      <p>Tout démarre sur logiciel de modélisation 3D. Nous dessinons chaque lame avec précision : la courbe du tranchant, l'angle du dos, l'ergonomie du manche, l'équilibre général de la pièce. Une lame de cuisine ne se conçoit pas comme une lame tactique — chaque usage dicte une géométrie différente.</p>
+      <p>Pour les <strong>commandes sur mesure</strong>, c'est ici que la magie opère : on intègre vos gravures, votre prénom, vos initiales directement dans le fichier 3D avant même d'imprimer.</p>
+      <h2>Étape 2 — Impression haute précision</h2>
+      <p>Nous imprimons couche par couche avec une précision de <strong>0.1mm</strong>. Les paramètres d'impression (température, vitesse, remplissage) sont optimisés pour chaque matériau et chaque modèle. L'Ombre en PETG ne s'imprime pas comme Le Doré en PLA Métallique.</p>
+      <div class="article-callout">
+        <p>⚠️ Un couteau raté à l'impression est systématiquement recommencé. Nous préférons prendre plus de temps plutôt que livrer une pièce imparfaite.</p>
+      </div>
+      <h2>Étape 3 — Finition à la main</h2>
+      <p>C'est l'étape la plus longue et la plus gratifiante. Ponçage progressif (grain 120 → 240 → 400), lissage des surfaces, application d'apprêt si nécessaire, peinture ou traitement de surface. Chaque rivure dorée du Classique est posée à la main. Chaque reflet du Doré est poli individuellement.</p>
+      <h2>Étape 4 — Contrôle qualité et livraison</h2>
+      <p>Avant l'emballage, chaque couteau passe un contrôle qualité : vérification des dimensions, de la finition, de l'équilibre. La pièce est ensuite emballée dans un écrin premium et expédiée sous 3 à 5 jours.</p>
+      <p>C'est ce processus exigeant qui fait d'Apex 3D non pas un simple fabricant, mais un véritable atelier de coutelerie numérique.</p>
+    </div>
+  </article>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="footer-logo">APEX<span class="logo-dot">·</span>3D</div>
+          <p>L'art de la lame numérique</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html#catalogue">Catalogue</a>
+          <a href="index.html#contact">Contact</a>
+          <a href="blog.html">Blog</a>
+          <a href="mentions-legales.html">Mentions légales</a>
+          <a href="cgv.html">CGV</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Apex 3D — Vincent Plessy. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    // Afficher l'article si ancre active
+    document.querySelectorAll('.blog-card').forEach(function(card) {
+      card.addEventListener('click', function(e) {
+        e.preventDefault();
+        var id = card.id.replace('card-', 'article-content-');
+        document.querySelectorAll('[id^="article-content"]').forEach(function(a){ a.style.display='none'; });
+        document.querySelectorAll('.blog-grid, .blog-hero').forEach(function(s){ s.style.display='none'; });
+        var article = document.getElementById(id);
+        if (article) { article.style.display='block'; window.scrollTo({top:0,behavior:'smooth'}); }
+      });
+    });
+    document.querySelectorAll('.back-to-blog').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        document.querySelectorAll('[id^="article-content"]').forEach(function(a){ a.style.display='none'; });
+        document.querySelectorAll('.blog-grid, .blog-hero').forEach(function(s){ s.style.display=''; });
+        window.scrollTo({top:0,behavior:'smooth'});
+      });
+    });
+  </script>
+</body>
+</html>
