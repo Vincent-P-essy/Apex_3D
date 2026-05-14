@@ -111,73 +111,181 @@
     </div>
     <div class="hero-knife" id="hero-knife">
       <div class="knife-glow"></div>
-      <svg id="knife-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg" aria-label="Couteau Apex 3D">
+      <svg id="knife-svg" viewBox="0 0 280 720" xmlns="http://www.w3.org/2000/svg" aria-label="Sabre Apex 3D">
         <defs>
-          <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#e8e8e8;stop-opacity:1" />
-            <stop offset="30%" style="stop-color:#c0c0c0;stop-opacity:1" />
-            <stop offset="60%" style="stop-color:#f0f0f0;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#888;stop-opacity:1" />
+          <linearGradient id="h-blade" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"  style="stop-color:#888;stop-opacity:1"/>
+            <stop offset="28%" style="stop-color:#d8d8d8;stop-opacity:1"/>
+            <stop offset="52%" style="stop-color:#f6f6f6;stop-opacity:1"/>
+            <stop offset="72%" style="stop-color:#e0e0e0;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#999;stop-opacity:1"/>
           </linearGradient>
-          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#c9a84c;stop-opacity:1" />
-            <stop offset="50%" style="stop-color:#e8c96d;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#a07830;stop-opacity:1" />
+          <linearGradient id="h-goldH" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   style="stop-color:#7a5a10;stop-opacity:1"/>
+            <stop offset="28%"  style="stop-color:#ddb840;stop-opacity:1"/>
+            <stop offset="55%"  style="stop-color:#f8e070;stop-opacity:1"/>
+            <stop offset="80%"  style="stop-color:#e0c050;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#c09030;stop-opacity:1"/>
           </linearGradient>
-          <linearGradient id="handleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#2a2a2a;stop-opacity:1" />
-            <stop offset="50%" style="stop-color:#1a1a1a;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#0f0f0f;stop-opacity:1" />
+          <linearGradient id="h-goldD" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   style="stop-color:#f0d860;stop-opacity:1"/>
+            <stop offset="40%"  style="stop-color:#c9a030;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#906010;stop-opacity:1"/>
           </linearGradient>
-          <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
-            <stop offset="100%" style="stop-color:#c9a84c;stop-opacity:0.5" />
+          <radialGradient id="h-pommel" cx="35%" cy="32%" r="68%">
+            <stop offset="0%"   style="stop-color:#fce87a;stop-opacity:1"/>
+            <stop offset="45%"  style="stop-color:#c9a030;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#7a5010;stop-opacity:1"/>
+          </radialGradient>
+          <linearGradient id="h-grip" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   style="stop-color:#242424;stop-opacity:1"/>
+            <stop offset="50%"  style="stop-color:#0a0a0a;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#1c1c1c;stop-opacity:1"/>
           </linearGradient>
-          <filter id="glowFilter">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          <filter id="h-glow">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
-          <filter id="shineFilter">
-            <feGaussianBlur stdDeviation="1.5" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          <filter id="h-gglow">
+            <feGaussianBlur stdDeviation="2" result="b"/>
+            <feFlood flood-color="#c9a84c" flood-opacity="0.35" result="c"/>
+            <feComposite in="c" in2="b" operator="in" result="s"/>
+            <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
-        <path d="M 200 40 L 230 80 L 245 140 L 248 220 L 245 300 L 240 360 L 235 400 L 195 400 L 190 360 L 185 300 L 182 220 L 185 140 L 200 80 Z" fill="url(#bladeGrad)" stroke="#999" stroke-width="0.5"/>
-        <path d="M 230 80 L 248 220 L 245 300 L 240 360 L 235 400" fill="none" stroke="url(#edgeGrad)" stroke-width="2" filter="url(#shineFilter)"/>
-        <path d="M 170 75 L 182 220 L 185 300 L 190 360 L 195 400" fill="none" stroke="#888" stroke-width="3"/>
-        <rect x="185" y="375" width="50" height="30" rx="2" fill="url(#bladeGrad)" stroke="#aaa" stroke-width="0.5"/>
-        <path d="M 205 90 Q 210 200 208 370" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-        <path d="M 200 40 L 210 65 L 205 70 Z" fill="rgba(255,255,255,0.6)"/>
-        <line x1="190" y1="150" x2="240" y2="170" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-        <line x1="188" y1="220" x2="242" y2="240" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-        <rect x="170" y="398" width="80" height="14" rx="3" fill="url(#goldGrad)" stroke="#a07830" stroke-width="1"/>
-        <line x1="175" y1="402" x2="245" y2="402" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>
-        <line x1="175" y1="408" x2="245" y2="408" stroke="rgba(0,0,0,0.3)" stroke-width="0.8"/>
-        <rect x="170" y="398" width="12" height="14" rx="2" fill="#e8c96d"/>
-        <rect x="238" y="398" width="12" height="14" rx="2" fill="#e8c96d"/>
-        <path d="M 178 412 L 182 560 Q 200 570 218 560 L 222 412 Z" fill="url(#handleGrad)" stroke="#333" stroke-width="1"/>
-        <line x1="183" y1="430" x2="217" y2="430" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="183" y1="445" x2="217" y2="445" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="183" y1="460" x2="217" y2="460" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="183" y1="475" x2="217" y2="475" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="183" y1="490" x2="217" y2="490" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="183" y1="505" x2="217" y2="505" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="183" y1="520" x2="217" y2="520" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="183" y1="535" x2="217" y2="535" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>
-        <line x1="186" y1="412" x2="183" y2="560" stroke="rgba(201,168,76,0.15)" stroke-width="0.6"/>
-        <line x1="200" y1="412" x2="200" y2="565" stroke="rgba(201,168,76,0.15)" stroke-width="0.6"/>
-        <line x1="214" y1="412" x2="217" y2="560" stroke="rgba(201,168,76,0.15)" stroke-width="0.6"/>
-        <circle cx="200" cy="440" r="4" fill="#c9a84c" stroke="#e8c96d" stroke-width="1"/>
-        <circle cx="200" cy="480" r="4" fill="#c9a84c" stroke="#e8c96d" stroke-width="1"/>
-        <circle cx="200" cy="520" r="4" fill="#c9a84c" stroke="#e8c96d" stroke-width="1"/>
-        <circle cx="198" cy="438" r="1.5" fill="rgba(255,255,255,0.6)"/>
-        <circle cx="198" cy="478" r="1.5" fill="rgba(255,255,255,0.6)"/>
-        <circle cx="198" cy="518" r="1.5" fill="rgba(255,255,255,0.6)"/>
-        <ellipse cx="200" cy="562" rx="22" ry="10" fill="url(#goldGrad)" stroke="#a07830" stroke-width="1"/>
-        <ellipse cx="200" cy="560" rx="18" ry="7" fill="#c9a84c"/>
-        <ellipse cx="195" cy="558" rx="8" ry="3" fill="rgba(255,255,255,0.3)"/>
-        <text x="200" y="280" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="rgba(201,168,76,0.5)" letter-spacing="2">APEX·3D</text>
-        <path d="M 235 100 L 247 200 L 244 300 L 238 380" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="4" filter="url(#glowFilter)"/>
+
+        <!-- ═══ LAME ═══ -->
+        <path d="M 118 18 C 116 90 109 210 104 435 L 152 435 C 150 210 146 90 138 18 Z"
+              fill="url(#h-blade)" stroke="#aaa" stroke-width="0.5"/>
+        <!-- Tranchant brillant (côté droit) -->
+        <path d="M 138 18 C 146 90 150 210 152 435"
+              fill="none" stroke="rgba(255,255,255,0.92)" stroke-width="2.2" filter="url(#h-glow)"/>
+        <!-- Dos de lame -->
+        <path d="M 118 18 C 116 90 109 210 104 435"
+              fill="none" stroke="rgba(70,70,70,0.7)" stroke-width="1.5"/>
+        <!-- Gouttière (fuller) -->
+        <path d="M 124 42 C 122 150 117 285 114 418"
+              fill="none" stroke="rgba(160,160,160,0.45)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Reflet secondaire -->
+        <path d="M 130 35 C 129 140 126 265 124 425"
+              fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>
+        <!-- Pointe lumineuse -->
+        <ellipse cx="128" cy="22" rx="4" ry="9" fill="rgba(255,255,255,0.45)"/>
+        <!-- Signature gravée -->
+        <text x="128" y="260" text-anchor="middle" font-family="JetBrains Mono,monospace"
+              font-size="5.5" fill="rgba(201,168,76,0.42)" letter-spacing="2.5"
+              transform="rotate(90,128,260)">APEX · 3D</text>
+
+        <!-- ═══ RICASSO ═══ -->
+        <rect x="102" y="422" width="52" height="16" rx="2"
+              fill="#d4d4d4" stroke="#aaa" stroke-width="0.5"/>
+        <line x1="104" y1="427" x2="152" y2="427"
+              stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
+
+        <!-- ═══ GARDE (quillon) ═══ -->
+        <path d="M 46 435 L 46 457 Q 50 462 57 459 L 206 459 Q 213 459 215 456 L 215 435 Q 213 430 206 431 L 57 431 Q 50 430 46 435 Z"
+              fill="url(#h-goldH)" stroke="#906010" stroke-width="1"/>
+        <line x1="48" y1="435" x2="214" y2="435" stroke="rgba(255,240,100,0.5)" stroke-width="0.9"/>
+        <line x1="48" y1="458" x2="214" y2="458" stroke="rgba(60,35,0,0.5)" stroke-width="0.9"/>
+
+        <!-- Motif coquille -->
+        <ellipse cx="108" cy="445" rx="11" ry="7.5" fill="none" stroke="rgba(130,90,15,0.7)" stroke-width="0.9"/>
+        <path d="M 100 445 Q 108 439 116 445" fill="none" stroke="rgba(150,110,20,0.6)" stroke-width="0.9"/>
+        <path d="M 100 445 Q 108 451 116 445" fill="none" stroke="rgba(90,60,5,0.5)" stroke-width="0.7"/>
+        <line x1="108" y1="437" x2="108" y2="453" stroke="rgba(130,90,15,0.4)" stroke-width="0.6"/>
+
+        <!-- Ancre marine -->
+        <line x1="165" y1="438" x2="165" y2="452" stroke="rgba(110,75,10,0.75)" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="160" y1="440" x2="170" y2="440" stroke="rgba(110,75,10,0.75)" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M 162 452 C 158 452 158 447 162 448 L 168 448 C 172 447 172 452 168 452"
+              fill="none" stroke="rgba(110,75,10,0.7)" stroke-width="1.3"/>
+
+        <!-- Anneau sur quillon gauche -->
+        <circle cx="53" cy="445" r="9.5" fill="none" stroke="url(#h-goldH)" stroke-width="3.5"/>
+        <circle cx="53" cy="445" r="5"   fill="none" stroke="rgba(250,220,90,0.3)" stroke-width="1"/>
+        <!-- Embouts de quillon -->
+        <ellipse cx="46" cy="445" rx="7" ry="11" fill="url(#h-goldD)" stroke="#806010" stroke-width="1.2"/>
+        <ellipse cx="215" cy="445" rx="7" ry="11" fill="url(#h-goldD)" stroke="#806010" stroke-width="1.2"/>
+
+        <!-- ═══ POIGNÉE GARDE (knuckle bow) ═══ -->
+        <!-- Arc extérieur principal -->
+        <path d="M 208 459 C 250 492 264 548 255 596 C 246 634 216 658 194 668"
+              fill="none" stroke="url(#h-goldH)" stroke-width="11" stroke-linecap="round"
+              filter="url(#h-gglow)"/>
+        <path d="M 208 459 C 250 492 264 548 255 596 C 246 634 216 658 194 668"
+              fill="none" stroke="rgba(60,35,0,0.5)" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M 210 460 C 252 493 266 549 257 597 C 248 635 218 659 195 669"
+              fill="none" stroke="rgba(255,245,130,0.45)" stroke-width="2.2" stroke-linecap="round"/>
+
+        <!-- Arc intérieur (2e barreau) -->
+        <path d="M 174 460 C 207 494 220 540 214 582 C 208 614 192 644 189 668"
+              fill="none" stroke="url(#h-goldD)" stroke-width="7" stroke-linecap="round" opacity="0.88"/>
+        <path d="M 174 460 C 207 494 220 540 214 582 C 208 614 192 644 189 668"
+              fill="none" stroke="rgba(255,240,110,0.25)" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Entretoise haute -->
+        <path d="M 176 509 C 200 504 224 507 240 512"
+              fill="none" stroke="url(#h-goldH)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M 176 509 C 200 504 224 507 240 512"
+              fill="none" stroke="rgba(255,245,130,0.3)" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Entretoise basse -->
+        <path d="M 180 562 C 203 557 224 560 238 566"
+              fill="none" stroke="url(#h-goldD)" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+
+        <!-- Volute haut de garde -->
+        <path d="M 208 459 C 219 453 226 462 220 470 C 214 478 205 474 203 467"
+              fill="none" stroke="url(#h-goldH)" stroke-width="4" stroke-linecap="round"/>
+        <!-- Volute bas de garde -->
+        <path d="M 194 668 C 184 676 174 673 171 665 C 168 657 175 650 183 653"
+              fill="none" stroke="url(#h-goldD)" stroke-width="4" stroke-linecap="round"/>
+
+        <!-- Nœud décoratif (milieu arc ext) -->
+        <circle cx="250" cy="557" r="6" fill="url(#h-goldD)" stroke="#806010" stroke-width="1"/>
+        <circle cx="250" cy="557" r="3" fill="rgba(255,240,120,0.6)"/>
+        <!-- Nœud décoratif (arc int) -->
+        <circle cx="213" cy="537" r="4.5" fill="url(#h-goldD)" stroke="#806010" stroke-width="1"/>
+
+        <!-- ═══ POIGNÉE (grip) ═══ -->
+        <path d="M 108 458 L 112 662 Q 130 673 150 662 L 154 458 Z"
+              fill="url(#h-grip)" stroke="#252525" stroke-width="1"/>
+        <!-- Tressage doré — diagonales montantes -->
+        <line x1="108" y1="475" x2="154" y2="464" stroke="rgba(201,168,76,0.42)" stroke-width="1"/>
+        <line x1="109" y1="492" x2="154" y2="481" stroke="rgba(201,168,76,0.42)" stroke-width="1"/>
+        <line x1="109" y1="509" x2="153" y2="498" stroke="rgba(201,168,76,0.42)" stroke-width="1"/>
+        <line x1="110" y1="526" x2="153" y2="515" stroke="rgba(201,168,76,0.40)" stroke-width="1"/>
+        <line x1="110" y1="543" x2="152" y2="532" stroke="rgba(201,168,76,0.40)" stroke-width="1"/>
+        <line x1="111" y1="560" x2="152" y2="549" stroke="rgba(201,168,76,0.38)" stroke-width="1"/>
+        <line x1="111" y1="577" x2="151" y2="566" stroke="rgba(201,168,76,0.36)" stroke-width="1"/>
+        <line x1="112" y1="594" x2="150" y2="583" stroke="rgba(201,168,76,0.34)" stroke-width="1"/>
+        <line x1="112" y1="611" x2="149" y2="600" stroke="rgba(201,168,76,0.32)" stroke-width="1"/>
+        <line x1="113" y1="628" x2="148" y2="617" stroke="rgba(201,168,76,0.28)" stroke-width="1"/>
+        <line x1="113" y1="645" x2="147" y2="636" stroke="rgba(201,168,76,0.24)" stroke-width="1"/>
+        <line x1="113" y1="658" x2="146" y2="651" stroke="rgba(201,168,76,0.18)" stroke-width="0.8"/>
+        <!-- Tressage doré — diagonales descendantes -->
+        <line x1="108" y1="464" x2="154" y2="475" stroke="rgba(201,168,76,0.42)" stroke-width="1"/>
+        <line x1="109" y1="481" x2="154" y2="492" stroke="rgba(201,168,76,0.42)" stroke-width="1"/>
+        <line x1="109" y1="498" x2="153" y2="509" stroke="rgba(201,168,76,0.42)" stroke-width="1"/>
+        <line x1="110" y1="515" x2="153" y2="526" stroke="rgba(201,168,76,0.40)" stroke-width="1"/>
+        <line x1="110" y1="532" x2="152" y2="543" stroke="rgba(201,168,76,0.40)" stroke-width="1"/>
+        <line x1="111" y1="549" x2="152" y2="560" stroke="rgba(201,168,76,0.38)" stroke-width="1"/>
+        <line x1="111" y1="566" x2="151" y2="577" stroke="rgba(201,168,76,0.36)" stroke-width="1"/>
+        <line x1="112" y1="583" x2="150" y2="594" stroke="rgba(201,168,76,0.34)" stroke-width="1"/>
+        <line x1="112" y1="600" x2="149" y2="611" stroke="rgba(201,168,76,0.32)" stroke-width="1"/>
+        <line x1="113" y1="617" x2="148" y2="628" stroke="rgba(201,168,76,0.28)" stroke-width="1"/>
+        <line x1="113" y1="636" x2="147" y2="645" stroke="rgba(201,168,76,0.24)" stroke-width="1"/>
+        <!-- Viroles -->
+        <rect x="106" y="456" width="50" height="9" rx="3" fill="url(#h-goldH)" stroke="#806010" stroke-width="0.9"/>
+        <line x1="108" y1="458" x2="154" y2="458" stroke="rgba(255,240,100,0.4)" stroke-width="0.7"/>
+        <rect x="109" y="653" width="44" height="9" rx="3" fill="url(#h-goldH)" stroke="#806010" stroke-width="0.9"/>
+
+        <!-- ═══ POMMEAU ═══ -->
+        <ellipse cx="131" cy="683" rx="28" ry="23" fill="rgba(0,0,0,0.35)"/>
+        <ellipse cx="131" cy="678" rx="27" ry="21" fill="url(#h-pommel)" stroke="#806010" stroke-width="1.8"/>
+        <ellipse cx="124" cy="672" rx="12" ry="8" fill="rgba(255,248,160,0.32)"/>
+        <ellipse cx="131" cy="678" rx="21" ry="14" fill="none" stroke="rgba(130,90,10,0.5)" stroke-width="0.9"/>
+        <ellipse cx="131" cy="690" rx="18" ry="10" fill="url(#h-goldD)" stroke="#706000" stroke-width="1.2"/>
+        <ellipse cx="125" cy="687" rx="8" ry="4.5" fill="rgba(255,240,120,0.28)"/>
       </svg>
     </div>
     <div class="hero-scroll-hint">
