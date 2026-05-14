@@ -272,6 +272,7 @@ body.cursor-hover #cursor-follower { width: 48px; height: 48px; opacity: 0.4; }
 }
 @media (max-width: 768px) {
   :root { --nav-h: 60px; }
+  .hero-scroll-hint { display: none; }
   .menu-toggle { display: flex; }
   .nav-links { position: fixed; top: var(--nav-h); left: 0; right: 0; background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 2rem; gap: 1.5rem; border-bottom: 1px solid var(--border); transform: translateY(-120%); transition: transform var(--transition); z-index: 999; }
   .nav-links.open { transform: translateY(0); }
