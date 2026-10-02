@@ -1,0 +1,31 @@
+{
+  "jobs": [
+    {
+      "root": ".",
+      "label": "Apex_3D",
+      "caption": "Browser capture of the existing static website running locally.",
+      "setup": [],
+      "commands": [],
+      "server": [
+        "python",
+        "-m",
+        "http.server",
+        "8650",
+        "--bind",
+        "127.0.0.1"
+      ],
+      "actions": [
+        {
+          "type": "wait",
+          "ms": 5000
+        }
+      ],
+      "copies": [
+        {
+          "source": "docs/screenshots/application.png",
+          "target": "apex-3d.png"
+        }
+      ]
+    }
+  ]
+}
