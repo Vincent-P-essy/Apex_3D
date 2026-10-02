@@ -1,37 +1,26 @@
-# Vincent Plessy — Portfolio
+# Apex 3D
 
-Portfolio personnel de **Vincent Plessy**, étudiant en informatique spécialisé backend, DevOps et cybersécurité.
+Site vitrine en HTML, CSS et JavaScript présentant un catalogue de couteaux imprimés en 3D, le processus de fabrication et une offre sur mesure. La page principale crédite Hugo Pouilliat pour la marque et les créations présentées.
 
-🌐 **[Voir le portfolio](https://vincent-p-essy.github.io/Apex_3D/)**
 
----
+## Aperçu
 
-## Présentation
+![Page d’accueil et présentation du catalogue](docs/screenshots/homepage.png)
 
-Étudiant en informatique, 22 ans. Spécialisé en développement backend, infrastructures DevOps et cybersécurité.  
-Recherche **alternance ou stage 2026**.
+![Catalogue de modèles et filtres](docs/screenshots/product-catalog.png)
 
-- 📧 vincent.plessy12@gmail.com  
-- 🔗 [LinkedIn](https://linkedin.com/in/vincent-plessy)  
-- 🐙 [GitHub](https://github.com/Vincent-P-essy)
+Pages du site exécuté localement. Le catalogue est une interface statique ; ces captures ne démontrent pas un paiement ou une commande traitée par un serveur.
 
----
+## Fonctionnalités
 
-## Stack technique
+- Catalogue filtrable et fiches détaillées des modèles.
+- Navigation par sections, menu mobile et animations au défilement.
+- Illustration SVG du produit et effets de particules sur Canvas.
+- Formulaire de contact et interface de conversation côté navigateur.
 
-- **HTML5 / CSS3 / JavaScript vanilla** — zéro dépendance
-- Typo : Inter + JetBrains Mono (Google Fonts)
-- Déploiement : **GitHub Pages**
+## Technologies
 
-## Structure
-
-```
-portfolio/
-├── index.html     # Page principale
-├── styles.css     # Design (dark theme cyber)
-├── script.js      # Interactions & animations
-└── README.md      # Ce fichier
-```
+HTML5, CSS3 et JavaScript sans framework. Les polices sont chargées depuis Google Fonts. Aucun service de paiement ou backend de commande n’est fourni dans ce dépôt.
 
 ## Lancer localement
 
@@ -39,18 +28,13 @@ portfolio/
 git clone https://github.com/Vincent-P-essy/Apex_3D.git
 cd Apex_3D
 python3 -m http.server 8000
-# → http://localhost:8000
 ```
 
-## Fonctionnalités
+Ouvrir <http://localhost:8000>.
 
-- Hero terminal animé
-- Navigation sticky avec section active
-- Scroll reveal (Intersection Observer)
-- Formulaire de contact
-- SEO complet + Open Graph
-- 100% responsive
+## Structure
 
----
-
-© 2026 Vincent Plessy
+- `index.html` : site Apex 3D.
+- `styles.css` : mise en page et styles responsive.
+- `script.js` : catalogue, interactions et animations.
+- `portfolio.html` : page de portfolio également conservée dans le dépôt.
