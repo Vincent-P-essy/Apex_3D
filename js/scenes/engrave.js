@@ -16,7 +16,7 @@ const tmp = new THREE.Vector3();
 const tmp2 = new THREE.Vector3();
 
 export class EngraveScene {
-  constructor(el, stage, { reduced = false } = {}) {
+  constructor(el, stage, { reduced = false, lite = false } = {}) {
     this.el = el;
     this.stage = stage;
     this.reduced = reduced;
@@ -59,7 +59,7 @@ export class EngraveScene {
     this.sparks = new Sparks(220, 77);
     this.sparks.gravity = -3.2;
     this.scene.add(this.sparks.object);
-    this.dust = createDust({ count: 160, box: [6, 3, 3], center: [0, 0.4, 0.2], seed: 51 });
+    this.dust = createDust({ count: lite ? 80 : 160, box: [6, 3, 3], center: [0, 0.4, 0.2], seed: 51 });
     this.dust.material.uniforms.uSize.value = 1.1;
     this.dust.material.uniforms.uLightPos.value.set(-1.5, 3.5, 1);
     this.dust.material.uniforms.uLightDir.value.set(0.3, -1, -0.1).normalize();

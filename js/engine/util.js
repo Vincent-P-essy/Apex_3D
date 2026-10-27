@@ -1,4 +1,4 @@
-// Petites briques mathématiques partagées par le moteur 3D.
+// Petites briques partagées par le moteur 3D (maths, ordonnancement).
 
 export const clamp = (v, a = 0, b = 1) => (v < a ? a : v > b ? b : v);
 export const lerp = (a, b, t) => a + (b - a) * t;
@@ -90,3 +90,47 @@ export function monotone(points) {
 }
 
 export const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => resolve()));
+
+// Vérification détaillée des shaders (journal d'erreurs) : activée avec ?debug.
+// Hors débogage, elle coûte plusieurs allers-retours GPU synchrones par programme.
+export const DEBUG = /[?&]debug\b/.test(location.search);
+
+// Compile les shaders d'un objet avec l'éclairage de sa scène et la cible du vrai
+// rendu (une cible hors écran change l'espace colorimétrique et le tone mapping du
+// programme), puis lit ses uniforms : sans KHR_parallel_shader_compile, compileAsync
+// rend la main avant la fin de l'édition de liens et l'attente retomberait sur le
+// premier rendu.
+export async function precompile(renderer, object, camera, scene, target = null) {
+  try {
+    const previous = renderer.getRenderTarget();
+    renderer.setRenderTarget(target);
+    const pending = renderer.compileAsync(object, camera, scene);
+    renderer.setRenderTarget(previous);
+    await pending;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    for (const m of materials) if (m) renderer.properties.get(m).currentProgram?.getUniforms();
+  } catch (e) {
+    /* compilation à la volée au premier rendu */
+  }
+}
+
+// Compile une liste d'objets : d'un bloc si le pilote compile en parallèle
+// (KHR_parallel_shader_compile : rien ne bloque), sinon un par un en rendant la
+// main au navigateur toutes les ~12 ms.
+export async function precompileAll(renderer, objects, camera, scene, target = null, onProgress) {
+  let done = 0;
+  const step = () => onProgress?.(++done / objects.length);
+  if (renderer.extensions.has('KHR_parallel_shader_compile')) {
+    await Promise.all(objects.map((o) => precompile(renderer, o, camera, scene, target).then(step)));
+    return;
+  }
+  let slice = performance.now();
+  for (const o of objects) {
+    await precompile(renderer, o, camera, scene, target);
+    step();
+    if (performance.now() - slice > 12) {
+      await nextFrame();
+      slice = performance.now();
+    }
+  }
+}

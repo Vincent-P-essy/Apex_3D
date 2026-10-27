@@ -4,22 +4,24 @@
 import * as THREE from 'three';
 import { createPost } from './engine/effects.js';
 import { createStudioEnvironment } from './engine/environment.js';
+import { DEBUG, precompileAll } from './engine/util.js';
 
 export class Stage {
-  constructor() {
-    const canvas = document.createElement('canvas');
+  constructor({ lite = false, canvas = document.createElement('canvas'), context } = {}) {
     canvas.className = 'stage-canvas';
     canvas.setAttribute('aria-hidden', 'true');
     this.canvas = canvas;
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance', stencil: false });
+    const renderer = new THREE.WebGLRenderer({ canvas, context, antialias: false, alpha: false, powerPreference: 'high-performance', stencil: false });
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setClearColor(0x050505, 1);
+    renderer.debug.checkShaderErrors = DEBUG;
     this.renderer = renderer;
-    const coarse = matchMedia('(pointer: coarse)').matches;
-    this.maxDpr = Math.min(window.devicePixelRatio || 1, coarse ? 1.35 : 1.75);
+    this.maxDpr = Math.min(window.devicePixelRatio || 1, lite ? 1.35 : 1.75);
     this.dpr = this.maxDpr;
-    this.post = createPost(renderer, { samples: Math.min(4, renderer.capabilities.maxSamples || 0) });
+    // mode allégé : bloom ajouté après l'affichage (addBloom), hors du chemin critique
+    this.post = createPost(renderer, { samples: Math.min(lite ? 2 : 4, renderer.capabilities.maxSamples || 0), bloom: !lite });
+    this.bloomGain = 1;
     this.env = createStudioEnvironment(renderer);
     this.hosts = [];
     this.active = null;
@@ -33,6 +35,27 @@ export class Stage {
       this.lost = true;
       canvas.remove();
     });
+  }
+
+  // Compilation des shaders avec l'éclairage de la vraie scène et la cible du
+  // post-traitement, sans gel prolongé de l'interface.
+  async compile(host, onProgress) {
+    const objects = [];
+    host.scene.traverse((o) => { if (o.isMesh || o.isPoints || o.isLine || o.isSprite) objects.push(o); });
+    await precompileAll(this.renderer, objects, host.camera, host.scene, this.post.composer.renderTarget1, onProgress);
+  }
+
+  // Bloom différé : shaders compilés en tâche de fond, puis intensité montée en
+  // douceur (pas de saut de lumière à l'écran).
+  async addBloom() {
+    if (this.post.bloom || this.lost) return;
+    const bloom = this.post.createBloom();
+    const quad = new THREE.PlaneGeometry(2, 2);
+    const materials = [bloom.materialHighPassFilter, ...bloom.separableBlurMaterials, bloom.compositeMaterial, bloom.blendMaterial];
+    await precompileAll(this.renderer, materials.map((m) => new THREE.Mesh(quad, m)), new THREE.Camera(), new THREE.Scene(), this.post.composer.renderTarget1);
+    quad.dispose();
+    this.bloomGain = 0;
+    this.post.addBloom(bloom);
   }
 
   add(host) {
@@ -111,12 +134,14 @@ export class Stage {
     const { bloom, finish, renderPass, composer } = this.post;
     renderPass.scene = host.scene;
     renderPass.camera = host.camera;
-    bloom.enabled = (p.bloom ?? 0.6) > 0 && this.slow < 2;
-    bloom.strength = p.bloom ?? 0.6;
-    bloom.radius = p.bloomRadius ?? 0.5;
-    bloom.threshold = p.threshold ?? 0.86;
-    this.renderer.toneMappingExposure = p.exposure ?? 1;
+    if (bloom) {
+      bloom.enabled = (p.bloom ?? 0.6) > 0 && this.slow < 2;
+      bloom.strength = (p.bloom ?? 0.6) * this.bloomGain;
+      bloom.radius = p.bloomRadius ?? 0.5;
+      bloom.threshold = p.threshold ?? 0.86;
+    }
     const u = finish.uniforms;
+    u.toneMappingExposure.value = p.exposure ?? 1;
     u.uTime.value = this.time;
     u.uGrain.value = p.grain ?? 0.04;
     u.uVignette.value = p.vignette ?? 0.5;
@@ -142,6 +167,7 @@ export class Stage {
   frame(dt) {
     if (this.lost) return false;
     this.time += dt;
+    this.bloomGain = Math.min(1, this.bloomGain + dt / 0.8);
     const host = this.pick();
     this.activate(host);
     if (!host) return false;

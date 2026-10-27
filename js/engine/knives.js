@@ -9,6 +9,12 @@ import { paintBlade, woodTextures, g10Textures, gripTextures, microTextures, mem
 import { knifeUniforms, metal, coating, polymer } from './materials.js';
 
 const GOLD = 0xf2c879;
+
+// Calcul différé et mémoïsé (textures générées au premier matériau qui les utilise).
+const once = (fn) => {
+  let v;
+  return () => (v ??= fn());
+};
 const STEEL = 0xc9cdd3;
 
 // Dents (crantage, scie) : fonction additive + points de rupture pour des angles nets.
@@ -46,7 +52,7 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0016 }, { v: 0.022, t: 0.005 }, { v: 0.5, t: T * 0.9 }, { v: 1, t: T }],
         strips: [{ group: 1 }, { group: 1, rows: 3, bulge: 0.05 }, { group: 0, rows: 2 }],
       });
-      const tex = paintBlade(blade.info, { rough: 0.2, brushed: 0.8, seed: 11, etch: { x: 0.36, vb: 0.66, size: 0.068, sub: 'PLA+ · FINI MAIN' } });
+      const tex = once(() => paintBlade(blade.info, { rough: 0.2, brushed: 0.8, seed: 11, etch: { x: 0.36, vb: 0.66, size: 0.068, sub: 'PLA+ · FINI MAIN' } }));
       blade.info.engraveX = 1.02;
 
       const hx0 = -0.12, hx1 = -1.32;
@@ -69,7 +75,6 @@ const MODELS = {
         g.translate(lerp(hx0, hx1, t), p.y, 0);
         return g;
       });
-      const micro = microTextures();
       return {
         blade,
         parts: [
@@ -80,10 +85,10 @@ const MODELS = {
           ...pins.map((g) => ({ geo: g, mat: 'gold' })),
         ],
         materials: {
-          flat: (U, o) => metal(U, { color: STEEL, map: tex.map, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, normalScale: 0.5, anisotropy: 0.6, etch: !!o.etch }),
-          bevel: (U) => metal(U, { color: 0xd8dbdf, roughness: 0.5, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, normalScale: 0.35, anisotropy: 0.3, edge: true }),
+          flat: (U, o) => metal(U, { color: STEEL, map: tex().map, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, normalScale: 0.5, anisotropy: 0.6, etch: !!o.etch }),
+          bevel: (U) => metal(U, { color: 0xd8dbdf, roughness: 0.5, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, normalScale: 0.35, anisotropy: 0.3, edge: true }),
           spine: (U) => metal(U, { color: STEEL, roughness: 0.32 }),
-          handle: (U) => polymer(U, { color: 0x0c0c0e, roughness: 0.55, roughnessMap: micro.roughnessMap, normalMap: micro.normalMap, normalScale: 0.35, clearcoat: 0.55, clearcoatRoughness: 0.28, repeat: [6, 4] }),
+          handle: (U) => polymer(U, { color: 0x0c0c0e, roughness: 0.55, roughnessMap: microTextures().roughnessMap, normalMap: microTextures().normalMap, normalScale: 0.35, clearcoat: 0.55, clearcoatRoughness: 0.28, repeat: [6, 4] }),
           tang: (U) => metal(U, { color: STEEL, roughness: 0.3 }),
           gold: (U) => metal(U, { color: GOLD, roughness: 0.2 }),
         },
@@ -106,7 +111,7 @@ const MODELS = {
         },
         strips: [{ group: 1 }, { group: 1, rows: 2 }, { group: 0 }, { group: 0 }],
       });
-      const tex = paintBlade(blade.info, { rough: 0.46, brushed: 0.15, baseLum: 0.3, etchLight: true, seed: 23, etch: { x: 0.42, vb: 0.66, size: 0.06, sub: 'TACTICAL · PETG' } });
+      const tex = once(() => paintBlade(blade.info, { rough: 0.46, brushed: 0.15, baseLum: 0.3, etchLight: true, seed: 23, etch: { x: 0.42, vb: 0.66, size: 0.06, sub: 'TACTICAL · PETG' } }));
 
       const hx0 = -0.03, hx1 = -1.2;
       const top = monotone([[0, 0.132], [0.3, 0.142], [0.75, 0.136], [1, 0.128]]);
@@ -128,7 +133,6 @@ const MODELS = {
       const pr = prof(0.93);
       const lanyard = buildGrommet(0.022, 0.034, pr.w * 2 + 0.006);
       lanyard.translate(lerp(hx0, hx1, 0.93), pr.y, 0);
-      const g10 = g10Textures();
       return {
         blade,
         parts: [
@@ -139,9 +143,9 @@ const MODELS = {
           { geo: lanyard, mat: 'pin' },
         ],
         materials: {
-          flat: (U) => coating(U, { color: 0xa9adb3, map: tex.map, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, metalness: 0.5, normalScale: 0.4 }),
+          flat: (U) => coating(U, { color: 0xa9adb3, map: tex().map, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, metalness: 0.5, normalScale: 0.4 }),
           bevel: (U) => metal(U, { color: STEEL, roughness: 0.3, anisotropy: 0.4, edge: true }),
-          handle: (U) => polymer(U, { color: 0x18191b, roughness: 1, roughnessMap: g10.roughnessMap, normalMap: g10.normalMap, normalScale: 0.9, repeat: [5, 2.2] }),
+          handle: (U) => polymer(U, { color: 0x18191b, roughness: 1, roughnessMap: g10Textures().roughnessMap, normalMap: g10Textures().normalMap, normalScale: 0.9, repeat: [5, 2.2] }),
           pin: (U) => metal(U, { color: 0xb9bec5, roughness: 0.35 }),
         },
         tint: 'dark',
@@ -160,7 +164,7 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0022 }, { v: 0.03, t: 0.0075 }, { v: 0.5, t: T }, { v: 0.97, t: 0.0075 }, { v: 1, t: 0.0022 }],
         strips: [{ group: 1 }, { group: 0, rows: 4, bulge: -0.05 }, { group: 0, rows: 4, bulge: -0.05 }, { group: 1 }],
       });
-      const tex = paintBlade(blade.info, { rough: 0.17, brushed: 0.25, seed: 5, deco: true, relief: 2.8 });
+      const tex = once(() => paintBlade(blade.info, { rough: 0.17, brushed: 0.25, seed: 5, deco: true, relief: 2.8 }));
 
       // garde à quillons recourbés vers la lame
       const guard = buildSweep({
@@ -196,7 +200,6 @@ const MODELS = {
       const pommel = new THREE.IcosahedronGeometry(0.09, 1);
       pommel.scale(1.3, 1, 1);
       pommel.translate(gx1 - 0.1, 0, 0);
-      const micro = microTextures();
       return {
         blade,
         parts: [
@@ -208,11 +211,11 @@ const MODELS = {
           { geo: pommel, mat: 'jewel' },
         ],
         materials: {
-          flat: (U) => metal(U, { color: GOLD, map: tex.map, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, normalScale: 0.7 }),
-          bevel: (U) => metal(U, { color: 0xffe0a0, roughness: 0.55, roughnessMap: tex.roughnessMap, edge: true }),
+          flat: (U) => metal(U, { color: GOLD, map: tex().map, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, normalScale: 0.7 }),
+          bevel: (U) => metal(U, { color: 0xffe0a0, roughness: 0.55, roughnessMap: tex().roughnessMap, edge: true }),
           gold: (U) => metal(U, { color: GOLD, roughness: 0.18 }),
           jewel: (U) => metal(U, { color: GOLD, roughness: 0.12, flat: true }),
-          lacquer: (U) => polymer(U, { color: 0x050506, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04, roughnessMap: micro.roughnessMap, normalMap: micro.normalMap, normalScale: 0.08, repeat: [4, 2] }),
+          lacquer: (U) => polymer(U, { color: 0x050506, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04, roughnessMap: microTextures().roughnessMap, normalMap: microTextures().normalMap, normalScale: 0.08, repeat: [4, 2] }),
         },
       };
     },
@@ -229,19 +232,18 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0013 }, { v: 0.025, t: 0.0042 }, { v: 0.44, t: T * 0.86 }, { v: 1, t: T }],
         strips: [{ group: 1 }, { group: 1, rows: 3, bulge: 0.05 }, { group: 0, rows: 2 }],
       });
-      const tex = paintBlade(blade.info, {
+      const tex = once(() => paintBlade(blade.info, {
         rough: 0.2, brushed: 0.35, seed: 31,
         damascus: { density: 64, warp: 2.4, contrast: 0.42 },
         dimples: { from: 0.16, to: 1.15, count: 9, vb: 0.25, rx: 0.04, ry: 0.02 },
         etch: { x: 0.3, vb: 0.7, size: 0.055, sub: 'SANTOKU · PLA+' },
-      });
+      }));
       const ferrule = buildSweep({ x0: 0, x1: -0.11, samples: 10, ring: 48, power: 2.2, profile: () => ({ y: -0.03, h: 0.118, w: 0.088 }) });
       const handle = buildSweep({
         x0: -0.105, x1: -1.38, samples: 40, facets: 8,
         profile: (t) => ({ y: -0.03, h: lerp(0.108, 0.123, t), w: lerp(0.082, 0.095, t) }), uScale: 1, vScale: 1,
       });
       const endCap = buildSweep({ x0: -1.375, x1: -1.43, samples: 6, facets: 8, profile: () => ({ y: -0.03, h: 0.1235, w: 0.0955 }) });
-      const wood = woodTextures();
       return {
         blade,
         parts: [
@@ -251,11 +253,11 @@ const MODELS = {
           { geo: endCap, mat: 'horn' },
         ],
         materials: {
-          flat: (U) => metal(U, { color: 0xccd0d5, map: tex.map, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, normalScale: 0.8, anisotropy: 0.35 }),
-          bevel: (U) => metal(U, { color: 0xd8dbdf, map: tex.map, roughness: 0.62, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, normalScale: 0.9, edge: true }),
+          flat: (U) => metal(U, { color: 0xccd0d5, map: tex().map, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, normalScale: 0.8, anisotropy: 0.35 }),
+          bevel: (U) => metal(U, { color: 0xd8dbdf, map: tex().map, roughness: 0.62, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, normalScale: 0.9, edge: true }),
           spine: (U) => metal(U, { color: STEEL, roughness: 0.3 }),
           gold: (U) => metal(U, { color: GOLD, roughness: 0.16 }),
-          wood: (U) => polymer(U, { color: 0xffffff, map: wood.map, roughness: 1, roughnessMap: wood.roughnessMap, normalMap: wood.normalMap, normalScale: 0.5, clearcoat: 0.45, clearcoatRoughness: 0.3 }),
+          wood: (U) => polymer(U, { color: 0xffffff, map: woodTextures().map, roughness: 1, roughnessMap: woodTextures().roughnessMap, normalMap: woodTextures().normalMap, normalScale: 0.5, clearcoat: 0.45, clearcoatRoughness: 0.3 }),
           horn: (U) => polymer(U, { color: 0x0b0908, roughness: 0.3, clearcoat: 0.8, clearcoatRoughness: 0.15 }),
         },
       };
@@ -275,7 +277,7 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0022 }, { v: 0.035, t: 0.009 }, { v: 0.4, t: T }, { v: 0.55, t: T }, { v: 0.74, t: T }, { v: 1, t: T }],
         strips: [{ group: 1 }, { group: 1, rows: 2 }, { group: 0 }, { group: 0, rows: 6, bulge: (x) => -fuller(x) }, { group: 0 }],
       });
-      const tex = paintBlade(blade.info, { rough: 0.42, brushed: 0.2, stonewash: true, seed: 17, etch: { x: 0.36, vb: 0.47, size: 0.06, sub: 'RANGER · ABS' } });
+      const tex = once(() => paintBlade(blade.info, { rough: 0.42, brushed: 0.2, stonewash: true, seed: 17, etch: { x: 0.36, vb: 0.47, size: 0.06, sub: 'RANGER · ABS' } }));
 
       const hx0 = -0.05, hx1 = -1.3;
       const top = monotone([[0, 0.146], [0.5, 0.152], [1, 0.14]]);
@@ -294,7 +296,6 @@ const MODELS = {
       });
       const lanyard = buildGrommet(0.024, 0.036, 0.083 * 2 + 0.01);
       lanyard.translate(hx1 - 0.075, -0.018, 0);
-      const grip = gripTextures();
       return {
         blade,
         parts: [
@@ -305,11 +306,11 @@ const MODELS = {
           { geo: lanyard, mat: 'bright' },
         ],
         materials: {
-          flat: (U) => metal(U, { color: 0x8d9299, map: tex.map, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, normalScale: 0.5 }),
-          bevel: (U) => metal(U, { color: 0xd7dbe0, roughness: 0.6, roughnessMap: tex.roughnessMap, normalMap: tex.normalMap, normalScale: 0.5, edge: true }),
+          flat: (U) => metal(U, { color: 0x8d9299, map: tex().map, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, normalScale: 0.5 }),
+          bevel: (U) => metal(U, { color: 0xd7dbe0, roughness: 0.6, roughnessMap: tex().roughnessMap, normalMap: tex().normalMap, normalScale: 0.5, edge: true }),
           gun: (U) => metal(U, { color: 0x7d8289, roughness: 0.42 }),
           bright: (U) => metal(U, { color: 0xc9cdd2, roughness: 0.25 }),
-          grip: (U) => polymer(U, { color: 0x1d2019, roughness: 1, roughnessMap: grip.roughnessMap, normalMap: grip.normalMap, normalScale: 0.8, repeat: [1, 1] }),
+          grip: (U) => polymer(U, { color: 0x1d2019, roughness: 1, roughnessMap: gripTextures().roughnessMap, normalMap: gripTextures().normalMap, normalScale: 0.8, repeat: [1, 1] }),
         },
       };
     },
@@ -369,7 +370,11 @@ export function knifeGeometries(id) {
   return { parts: def.parts.map((p) => p.geo), box: def.box };
 }
 
-// Préchauffe les définitions (géométries + textures) pour mesurer la progression.
-export function prepareModel(id) {
-  definition(id);
+// Préchauffe un modèle : géométrie, et textures si demandé (matériaux instanciés à blanc).
+export function prepareModel(id, { textures = true } = {}) {
+  const def = definition(id);
+  if (!textures || def.warmed) return;
+  const U = knifeUniforms();
+  Object.keys(def.materials).forEach((k) => def.materials[k](U, {}).dispose());
+  def.warmed = true;
 }

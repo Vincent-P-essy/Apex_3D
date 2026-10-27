@@ -192,7 +192,7 @@ function dimensionLines(knife) {
 }
 
 export class ForgeScene {
-  constructor(el, section, stage, { reduced = false } = {}) {
+  constructor(el, section, stage, { reduced = false, lite = false } = {}) {
     this.el = el;
     this.section = section;
     this.stage = stage;
@@ -249,7 +249,7 @@ export class ForgeScene {
 
     this.sparks = new Sparks(300, 12);
     this.scene.add(this.sparks.object);
-    this.dust = createDust({ count: 360, box: [12, 7, 8], center: [0, 1, 0], seed: 33 });
+    this.dust = createDust({ count: lite ? 160 : 360, box: [12, 7, 8], center: [0, 1, 0], seed: 33 });
     this.dust.material.uniforms.uLightPos.value.set(-2.5, 6.5, -1.5);
     this.dust.material.uniforms.uLightDir.value.set(0.35, -1, 0.2).normalize();
     this.scene.add(this.dust);

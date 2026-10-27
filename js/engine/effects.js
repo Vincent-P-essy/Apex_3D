@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { rng } from './util.js';
 import { flareTexture, radialTexture } from './textures.js';
@@ -298,58 +297,79 @@ export function createContactShadow(opacity = 0.75) {
 // ---------------------------------------------------------------------------
 // Post-traitement
 // ---------------------------------------------------------------------------
-const FinishShader = {
-  uniforms: {
-    tDiffuse: { value: null },
-    uTime: { value: 0 },
-    uGrain: { value: 0.04 },
-    uVignette: { value: 0.5 },
-    uCA: { value: 0.0022 },
-    uFade: { value: 1 },
-    uRes: { value: new THREE.Vector2(1, 1) },
-  },
-  vertexShader: /* glsl */`
-    varying vec2 vUv;
-    void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`,
-  fragmentShader: /* glsl */`
-    uniform sampler2D tDiffuse;
-    uniform float uTime, uGrain, uVignette, uCA, uFade;
-    uniform vec2 uRes;
-    varying vec2 vUv;
-    float hash( vec2 p ) { p = fract( p * vec2( 233.34, 851.73 ) ); p += dot( p, p + 23.45 ); return fract( p.x * p.y ); }
-    void main() {
-      vec2 d = vUv - 0.5;
-      float r2 = dot( d, d );
-      vec2 off = d * r2 * uCA * 4.0;
-      vec3 col;
-      col.r = texture2D( tDiffuse, vUv - off ).r;
-      col.g = texture2D( tDiffuse, vUv ).g;
-      col.b = texture2D( tDiffuse, vUv + off ).b;
-      float vig = smoothstep( 0.95, 0.25, length( d * vec2( 1.0, 1.15 ) ) );
-      col *= mix( 1.0 - uVignette, 1.0, vig );
-      float g = hash( floor( vUv * uRes ) + fract( uTime * 7.31 ) * 97.0 ) - 0.5;
-      col += g * uGrain * ( 0.6 + 0.4 * ( 1.0 - dot( col, vec3( 0.333 ) ) ) );
-      gl_FragColor = vec4( col * uFade, 1.0 );
-    }`,
-};
+// Passe finale unique (remplace OutputPass) : aberration chromatique, tone mapping
+// neutre et conversion sRGB, puis vignettage et grain dans l'espace d'affichage.
+function finishMaterial() {
+  return new THREE.RawShaderMaterial({
+    name: 'ApexFinish',
+    defines: { NEUTRAL_TONE_MAPPING: '', SRGB_TRANSFER: '' },
+    uniforms: {
+      tDiffuse: { value: null },
+      toneMappingExposure: { value: 1 },
+      uTime: { value: 0 },
+      uGrain: { value: 0.04 },
+      uVignette: { value: 0.5 },
+      uCA: { value: 0.0022 },
+      uFade: { value: 1 },
+      uRes: { value: new THREE.Vector2(1, 1) },
+    },
+    vertexShader: /* glsl */`
+      precision highp float;
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+      attribute vec3 position;
+      attribute vec2 uv;
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }`,
+    fragmentShader: /* glsl */`
+      precision highp float;
+      uniform sampler2D tDiffuse;
+      uniform float uTime, uGrain, uVignette, uCA, uFade;
+      uniform vec2 uRes;
+      #include <tonemapping_pars_fragment>
+      #include <colorspace_pars_fragment>
+      varying vec2 vUv;
+      float hash( vec2 p ) { p = fract( p * vec2( 233.34, 851.73 ) ); p += dot( p, p + 23.45 ); return fract( p.x * p.y ); }
+      void main() {
+        vec2 d = vUv - 0.5;
+        vec2 off = d * dot( d, d ) * uCA * 4.0;
+        vec4 c = texture2D( tDiffuse, vUv );
+        c.r = texture2D( tDiffuse, vUv - off ).r;
+        c.b = texture2D( tDiffuse, vUv + off ).b;
+        c.rgb = NeutralToneMapping( c.rgb );
+        vec3 col = sRGBTransferOETF( vec4( c.rgb, 1.0 ) ).rgb;
+        float vig = smoothstep( 0.95, 0.25, length( d * vec2( 1.0, 1.15 ) ) );
+        col *= mix( 1.0 - uVignette, 1.0, vig );
+        float g = hash( floor( vUv * uRes ) + fract( uTime * 7.31 ) * 97.0 ) - 0.5;
+        col += g * uGrain * ( 0.6 + 0.4 * ( 1.0 - dot( col, vec3( 0.333 ) ) ) );
+        gl_FragColor = vec4( col * uFade, 1.0 );
+      }`,
+    depthTest: false,
+    depthWrite: false,
+  });
+}
 
-export function createPost(renderer, { samples = 4 } = {}) {
+export function createPost(renderer, { samples = 4, bloom: withBloom = true } = {}) {
   const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
   const composer = new EffectComposer(renderer, rt);
   const renderPass = new RenderPass(new THREE.Scene(), new THREE.PerspectiveCamera());
-  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.5, 0.86);
-  const output = new OutputPass();
-  const finish = new ShaderPass(FinishShader);
+  const finish = new ShaderPass(finishMaterial());
   composer.addPass(renderPass);
-  composer.addPass(bloom);
-  composer.addPass(output);
   composer.addPass(finish);
-  return {
-    composer, renderPass, bloom, output, finish,
+  const post = {
+    composer, renderPass, finish, bloom: null,
+    // le bloom (8 shaders) peut rejoindre la chaîne plus tard, entre rendu et finition
+    createBloom: () => new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.5, 0.86),
+    addBloom(pass) {
+      composer.insertPass(pass, 1);
+      post.bloom = pass;
+    },
     setSize(w, h, dpr) {
       composer.setPixelRatio(dpr);
       composer.setSize(w, h);
       finish.uniforms.uRes.value.set(w * dpr, h * dpr);
     },
   };
+  if (withBloom) post.addBloom(post.createBloom());
+  return post;
 }

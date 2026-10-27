@@ -37,12 +37,20 @@ Les demandes sont relayées par [FormSubmit](https://formsubmit.co) vers la boî
 ## Rendu 3D
 
 - **Lames paramétriques** : profils dos/tranchant, émouture réelle (biseau, micro-fil, contre-tranchant, gouttière) avec arêtes nettes, crantage et scie ; manches balayés en superellipse ou octogone (`js/engine/geometry.js`, `js/engine/knives.js`).
-- **Matériaux** : acier brossé anisotrope, revêtement noir, or, laque, bois, G10, caoutchouc ; textures procédurales (damas, stonewash, gravures, logo) générées en canvas au chargement.
+- **Matériaux** : acier brossé anisotrope, revêtement noir, or, laque, bois, G10, caoutchouc ; textures procédurales (damas, stonewash, gravures, logo) générées en canvas à la demande, modèle par modèle.
 - **Lumière** : boîtes à lumière HDR captées dans une carte d'environnement préfiltrée (PMREM), comme en photo produit.
 - **Extension de shader** : plan d'impression et section en fusion, lignes de couches, front de polissage, éclat sur le fil, gravure laser.
-- **Post-traitement** : bloom HDR, tone mapping neutre, grain argentique, vignettage, légère aberration chromatique.
+- **Post-traitement** : bloom HDR, tone mapping neutre, grain argentique, vignettage, légère aberration chromatique (une seule passe finale).
 - **Deux contextes WebGL seulement** : un contexte « cinéma » déplacé dans la section la plus visible (hero, fabrication, atelier, fiche) et un contexte hors écran (`OffscreenCanvas`) qui transfère chaque carte sans copie (`transferToImageBitmap`).
-- **Qualité adaptative** : résolution réduite automatiquement si le GPU peine ; rendu suspendu hors écran.
+- **Qualité adaptative** : résolution réduite automatiquement si le GPU peine, puis bloom coupé ; rendu suspendu hors écran.
+
+## Chargement
+
+- **Chemin critique minimal** : seul le hero est préparé derrière le voile de chargement (textures du modèle affiché, environnement lumineux, shaders). Le voile est plafonné à 3,5 s ; au-delà, la page s'affiche et le couteau apparaît dès qu'il est prêt.
+- **Constructions différées** : catalogue, séquence de fabrication, atelier de gravure et fiche 3D sont importés (`import()` dynamique) et construits à l'approche de leur section ou pendant les temps morts du navigateur, par petites tranches.
+- **Shaders** : compilés avec l'éclairage réel et la cible du post-traitement (mêmes variantes que le rendu), en parallèle quand le pilote expose `KHR_parallel_shader_compile`, sinon un par un entre deux images.
+- **Mode allégé** (écran tactile ou appareil modeste) : textures en demi-résolution, MSAA 2×, moins de particules, bloom ajouté en fondu après l'affichage.
+- **Réseau** : les modules du chemin critique sont déclarés en `modulepreload` dans `index.html` (pas de cascade d'imports) — liste à tenir à jour si les imports changent.
 
 ## Accessibilité et repli
 
@@ -76,7 +84,7 @@ cd Apex_3D
 python3 -m http.server 8000
 ```
 
-Ouvrir <http://localhost:8000>.
+Ouvrir <http://localhost:8000>. Ajouter `?debug` à l'adresse active la vérification détaillée des shaders (journal d'erreurs WebGL), désactivée par défaut car elle impose des allers-retours synchrones avec le GPU.
 
 ## Structure
 
@@ -84,7 +92,7 @@ Ouvrir <http://localhost:8000>.
 - `styles.css` : mise en page, effets et styles responsive.
 - `script.js` : interface (chargement, filtres, fiche produit, formulaires et envoi des demandes, assistant).
 - `chatbot.js` : base de réponses de l'assistant.
-- `js/main.js` : démarrage du rendu 3D et boucle d'animation.
+- `js/main.js` : démarrage du rendu 3D (chemin critique du hero, constructions différées) et boucle d'animation.
 - `js/stage.js` : contexte WebGL partagé entre les sections, post-traitement, qualité adaptative.
 - `js/gallery.js` : rendu hors écran des cartes du catalogue.
 - `js/scenes/` : hero, séquence de fabrication, atelier de gravure, visionneuse 360°.

@@ -9,7 +9,7 @@ const tmp = new THREE.Vector3();
 const L_SHADOW = 3.0;
 
 export class HeroScene {
-  constructor(el, stage, { reduced = false } = {}) {
+  constructor(el, stage, { reduced = false, lite = false } = {}) {
     this.el = el;
     this.stage = stage;
     this.reduced = reduced;
@@ -49,7 +49,7 @@ export class HeroScene {
     const to = new THREE.Vector3(0.5, this.floorY, 0.4);
     this.beam = createBeam({ from: this.beamFrom, to, radiusTop: 0.12, radiusBottom: 1.6, intensity: 0, color: 0xfff1dc });
     this.set.add(this.beam);
-    this.dust = createDust({ count: 620, box: [13, 8, 8], center: [-0.5, 1.2, 0.5], seed: 21 });
+    this.dust = createDust({ count: lite ? 260 : 620, box: [13, 8, 8], center: [-0.5, 1.2, 0.5], seed: 21 });
     this.dust.material.uniforms.uLightDir.value.subVectors(to, this.beamFrom).normalize();
     this.set.add(this.dust);
     this.sparks = new Sparks(360, 4);

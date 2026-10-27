@@ -144,6 +144,14 @@ function hook(material, U, { edge = false, etch = false } = {}) {
 
 const v2 = (x, y = x) => new THREE.Vector2(x, y);
 
+// Répétition propre à un matériau : clone léger (même image GPU, transformation UV distincte).
+function repeated(tex, rx, ry) {
+  if (!tex || (rx === 1 && ry === 1)) return tex;
+  const t = tex.clone();
+  t.repeat.set(rx, ry);
+  return t;
+}
+
 // --- Familles de matériaux (couleurs en sRGB, converties par three.js) -----
 export function metal(U, opts = {}) {
   const m = new THREE.MeshPhysicalMaterial({
@@ -161,7 +169,6 @@ export function metal(U, opts = {}) {
     clearcoatRoughness: opts.clearcoatRoughness ?? 0.1,
     flatShading: !!opts.flat,
   });
-  if (m.normalMap) m.normalMap.repeat.set(opts.repeat ?? 1, opts.repeat ?? 1);
   return hook(m, U, opts);
 }
 
@@ -200,10 +207,8 @@ export function polymer(U, opts = {}) {
   });
   const rep = opts.repeat;
   if (rep) {
-    [m.normalMap, m.roughnessMap].forEach((t) => {
-      if (!t) return;
-      t.repeat.set(rep[0], rep[1]);
-    });
+    m.normalMap = repeated(m.normalMap, rep[0], rep[1]);
+    m.roughnessMap = repeated(m.roughnessMap, rep[0], rep[1]);
   }
   return hook(m, U, opts);
 }

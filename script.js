@@ -47,11 +47,12 @@ function prefillContact(objet, message) {
 
   const pct = $('#loader-pct');
   const label = $('#loader-label');
-  const steps = [[0, "Calibrage de l'atelier"], [0.12, 'Modélisation des lames'], [0.54, 'Montage du studio lumière'], [0.76, 'Compilation des shaders'], [0.96, 'Mise au point']];
+  const steps = [[0, "Calibrage de l'atelier"], [0.08, 'Modélisation de la lame'], [0.2, 'Montage du studio lumière'], [0.62, 'Compilation des shaders'], [0.95, 'Mise au point']];
   const canModule = typeof HTMLScriptElement !== 'undefined' && HTMLScriptElement.supports && HTMLScriptElement.supports('importmap');
   const start = performance.now();
-  const MIN = REDUCED ? 200 : 1500;
-  const MAX = 10000;
+  // voile court : au-delà de MAX, la page s'affiche et la 3D apparaît dès qu'elle est prête
+  const MIN = REDUCED ? 200 : 900;
+  const MAX = 3500;
   let target = APEX.progress || 0;
   let shown = 0;
   if (!canModule || APEX.failed) target = 1;
@@ -61,10 +62,14 @@ function prefillContact(objet, message) {
   });
   document.documentElement.classList.add('is-loading');
 
+  let prev = start;
   const tick = (now) => {
     const elapsed = now - start;
+    const dt = Math.min(0.25, (now - prev) / 1000);
+    prev = now;
     if (elapsed > MAX) target = 1;
-    shown += (target - shown) * (REDUCED ? 1 : 0.075);
+    // lissage indépendant de la cadence : la jauge suit la vraie progression
+    shown += (target - shown) * (REDUCED ? 1 : 1 - Math.exp(-dt * 10));
     if (target - shown < 0.003) shown = target;
     loader.style.setProperty('--p', shown.toFixed(4));
     if (pct) pct.textContent = String(Math.round(shown * 100));

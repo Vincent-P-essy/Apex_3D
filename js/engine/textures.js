@@ -9,11 +9,29 @@ export const memo = (key, build) => {
   return cache.get(key);
 };
 
+// Résolution des textures générées (0.5 sur mobile : 4× moins de pixels à calculer).
+export const quality = { tex: 1 };
+
 function makeCanvas(w, h) {
   const c = document.createElement('canvas');
   c.width = w;
   c.height = h;
   return c;
+}
+
+// Champ de bruit basse fréquence calculé sur une grille grossière puis interpolé :
+// mêmes ondulations, 64× moins d'appels au bruit.
+function coarseField(W, H, step, fn) {
+  const gw = Math.ceil(W / step) + 1, gh = Math.ceil(H / step) + 1;
+  const g = new Float32Array(gw * gh);
+  for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) g[j * gw + i] = fn(i * step, j * step);
+  return (i, j) => {
+    const fx = i / step, fy = j / step;
+    const x0 = Math.floor(fx), y0 = Math.floor(fy);
+    const tx = fx - x0, ty = fy - y0;
+    const a = g[y0 * gw + x0], b = g[y0 * gw + x0 + 1], c = g[(y0 + 1) * gw + x0], d = g[(y0 + 1) * gw + x0 + 1];
+    return a + (b - a) * tx + (c - a) * ty + (a - b - c + d) * tx * ty;
+  };
 }
 
 function toTexture(canvas, { srgb = false, repeat = false } = {}) {
@@ -66,7 +84,7 @@ function normalCanvas(height, w, h, strength, wrap = false) {
 
 function readMask(canvas) {
   const { width: w, height: h } = canvas;
-  const data = canvas.getContext('2d').getImageData(0, 0, w, h).data;
+  const data = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
   const out = new Float32Array(w * h);
   for (let i = 0; i < out.length; i++) out[i] = data[i * 4] / 255;
   return out;
@@ -77,8 +95,9 @@ function readMask(canvas) {
 // info = { x0, L, yMin, yMax, spine(x), edge(x) } (fourni par buildBlade)
 // ---------------------------------------------------------------------------
 export function paintBlade(info, opts = {}) {
-  const W = 1024, H = 256;
+  const W = Math.round(1024 * quality.tex), H = Math.round(256 * quality.tex);
   const N = W * H;
+  const px1 = W / 1024; // tailles de trait / motifs exprimées pour 1024 px
   const rough = new Float32Array(N).fill(opts.rough ?? 0.3);
   const lum = new Float32Array(N).fill(opts.baseLum ?? 1);
   const hgt = new Float32Array(N);
@@ -90,7 +109,7 @@ export function paintBlade(info, opts = {}) {
   const masks = {};
   const maskCtx = (name) => {
     const c = makeCanvas(W, H);
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { willReadFrequently: true });
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
     masks[name] = c;
@@ -100,16 +119,16 @@ export function paintBlade(info, opts = {}) {
   if (opts.stonewash) {
     const ctx = maskCtx('stonewash');
     const r = rng(opts.seed ?? 7);
-    for (let i = 0; i < 2600; i++) {
+    for (let i = 0, n = Math.round(2600 * px1 * px1); i < n; i++) {
       const g = Math.floor(r() * 255);
       ctx.fillStyle = `rgba(${g},${g},${g},${0.04 + r() * 0.08})`;
       ctx.beginPath();
-      ctx.ellipse(r() * W, r() * H, 1 + r() * 7, 1 + r() * 5, r() * Math.PI, 0, Math.PI * 2);
+      ctx.ellipse(r() * W, r() * H, (1 + r() * 7) * px1, (1 + r() * 5) * px1, r() * Math.PI, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.lineWidth = 0.6;
-    for (let i = 0; i < 700; i++) {
-      const x = r() * W, y = r() * H, a = r() * Math.PI * 2, l = 4 + r() * 22;
+    ctx.lineWidth = 0.6 * px1;
+    for (let i = 0, n = Math.round(700 * px1 * px1); i < n; i++) {
+      const x = r() * W, y = r() * H, a = r() * Math.PI * 2, l = (4 + r() * 22) * px1;
       ctx.strokeStyle = `rgba(255,255,255,${0.05 + r() * 0.12})`;
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -145,7 +164,7 @@ export function paintBlade(info, opts = {}) {
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     const line = (pts, wdt) => {
-      ctx.lineWidth = wdt;
+      ctx.lineWidth = Math.max(0.7, wdt * px1);
       ctx.beginPath();
       pts.forEach(([x, y], i) => {
         const [px, py] = toPx(x, y);
@@ -208,20 +227,29 @@ export function paintBlade(info, opts = {}) {
   const noise2 = makeNoise((opts.seed ?? 3) * 29 + 5, 128);
   const brushed = opts.brushed ?? 0.6;
   const dam = opts.damascus;
+  const xOf = (i) => info.x0 + ((i + 0.5) / W) * spanX;
+  const yOf = (j) => info.yMin + (1 - (j + 0.5) / H) * spanY;
+
+  // stries du brossage : bruit séparable (deux profils de rangée mêlés le long de x)
+  const rowA = new Float32Array(H), rowB = new Float32Array(H), mixX = new Float32Array(W);
+  if (brushed > 0) {
+    for (let j = 0; j < H; j++) { rowA[j] = fbm(noise, 3.7, j * 0.75, 3); rowB[j] = fbm(noise, 61.3, j * 0.75, 3); }
+    for (let i = 0; i < W; i++) mixX[i] = smoothstep(0.25, 0.75, fbm(noise2, (i / px1) * 0.004, 17.1, 2));
+  }
+  const warp = dam ? coarseField(W, H, 8, (i, j) => fbm(noise2, xOf(i) * 1.7, yOf(j) * 3.1, 4) * 2 - 1) : null;
 
   for (let j = 0; j < H; j++) {
-    const v = 1 - (j + 0.5) / H;
-    const y = info.yMin + v * spanY;
+    const y = yOf(j);
     for (let i = 0; i < W; i++) {
       const k = j * W + i;
-      const x = info.x0 + ((i + 0.5) / W) * spanX;
+      const x = xOf(i);
       if (brushed > 0) {
-        const n = fbm(noise, i * 0.0045, j * 0.75, 3);
+        const n = rowA[j] + (rowB[j] - rowA[j]) * mixX[i];
         rough[k] += (n - 0.5) * brushed * 0.2;
         lum[k] *= 1 + (n - 0.5) * brushed * 0.035;
       }
       if (dam) {
-        const w = fbm(noise2, x * 1.7, y * 3.1, 4) * 2 - 1;
+        const w = warp(i, j);
         const ph = y * dam.density + w * dam.warp + Math.sin(x * 2.4 + y * 4.0) * 0.8;
         const d = Math.sin(ph * Math.PI * 2);
         const band = smoothstep(-0.3, 0.3, d);
@@ -269,23 +297,25 @@ export function paintBlade(info, opts = {}) {
 // ---------------------------------------------------------------------------
 export function woodTextures() {
   return memo('wood', () => {
-    const W = 1024, H = 256, N = W * H;
+    const W = Math.round(1024 * quality.tex), H = Math.round(256 * quality.tex), N = W * H;
     const col = makeCanvas(W, H);
     const ctx = col.getContext('2d');
     const img = ctx.createImageData(W, H);
     const rough = new Float32Array(N), hgt = new Float32Array(N);
     const noise = makeNoise(41, 256), noise2 = makeNoise(77, 256);
     const light = [150, 96, 58], dark = [74, 40, 20];
+    const warpF = coarseField(W, H, 8, (i, j) => fbm(noise, (i / W) * 2.2, (j / H) * 3.0, 4) * 1.6);
+    const figureF = coarseField(W, H, 8, (i, j) => fbm(noise, (i / W) * 0.9 + 7, (j / H) * 1.4, 3));
     for (let j = 0; j < H; j++) {
       for (let i = 0; i < W; i++) {
         const k = j * W + i;
         const u = i / W, v = j / H;
         // veines longitudinales ondulées (bois de fil) + figure douce
-        const warp = fbm(noise, u * 2.2, v * 3.0, 4) * 1.6 + Math.sin(u * 5.0 + v * 2.0) * 0.08;
+        const warp = warpF(i, j) + Math.sin(u * 5.0 + v * 2.0) * 0.08;
         const ring = (((v * 14.0 + warp) % 1) + 1) % 1;
         const late = Math.pow(Math.sin(ring * Math.PI), 6);
         const fine = fbm(noise2, u * 3.0, v * 90.0, 2);
-        const figure = fbm(noise, u * 0.9 + 7, v * 1.4, 3);
+        const figure = figureF(i, j);
         const t = clamp(late * 0.7 + (fine - 0.5) * 0.35 + (figure - 0.5) * 0.5);
         const pore = fbm(noise2, u * 140.0, v * 6.0, 1) < 0.18 ? 0.86 : 1;
         img.data[k * 4] = lerp(light[0], dark[0], t) * pore;
@@ -308,7 +338,7 @@ export function woodTextures() {
 // G10 usiné : motif pyramidal en losanges.
 export function g10Textures() {
   return memo('g10', () => {
-    const S = 512, N = S * S;
+    const S = 256, N = S * S;
     const hgt = new Float32Array(N), rough = new Float32Array(N);
     const noise = makeNoise(91, 128);
     const cells = 16;
@@ -318,14 +348,14 @@ export function g10Textures() {
         const u = (i / S) * cells, v = (j / S) * cells;
         const a = Math.abs(((u + v) % 1) - 0.5), b = Math.abs(((u - v + 64) % 1) - 0.5);
         const pyr = 1 - Math.max(a, b) * 2;
-        const n = noise(i * 0.08, j * 0.08);
+        const n = noise(i * 0.16, j * 0.16);
         hgt[k] = smoothstep(0.05, 0.6, pyr) + n * 0.08;
         rough[k] = 0.62 + n * 0.16 - smoothstep(0.7, 1, pyr) * 0.12;
       }
     }
     return {
       roughnessMap: toTexture(grayCanvas(rough, S, S), { repeat: true }),
-      normalMap: toTexture(normalCanvas(hgt, S, S, 4.5, true), { repeat: true }),
+      normalMap: toTexture(normalCanvas(hgt, S, S, 2.6, true), { repeat: true }),
     };
   });
 }
@@ -333,7 +363,7 @@ export function g10Textures() {
 // Grip caoutchouté : nervures transversales + grain fin.
 export function gripTextures() {
   return memo('grip', () => {
-    const S = 512, N = S * S;
+    const S = 256, N = S * S;
     const hgt = new Float32Array(N), rough = new Float32Array(N);
     const noise = makeNoise(13, 256);
     for (let j = 0; j < S; j++) {
@@ -341,14 +371,14 @@ export function gripTextures() {
         const k = j * S + i;
         const u = i / S;
         const rib = Math.pow(Math.abs(Math.sin(u * Math.PI * 24)), 0.6);
-        const n = fbm(noise, i * 0.12, j * 0.12, 2);
+        const n = fbm(noise, i * 0.24, j * 0.24, 2);
         hgt[k] = rib * 0.8 + n * 0.25;
         rough[k] = 0.82 + n * 0.12;
       }
     }
     return {
       roughnessMap: toTexture(grayCanvas(rough, S, S), { repeat: true }),
-      normalMap: toTexture(normalCanvas(hgt, S, S, 3.2, true), { repeat: true }),
+      normalMap: toTexture(normalCanvas(hgt, S, S, 1.9, true), { repeat: true }),
     };
   });
 }
@@ -356,20 +386,20 @@ export function gripTextures() {
 // Micro-relief discret (polymère satiné, laque, métal fondu).
 export function microTextures() {
   return memo('micro', () => {
-    const S = 256, N = S * S;
+    const S = 128, N = S * S;
     const hgt = new Float32Array(N), rough = new Float32Array(N);
-    const noise = makeNoise(5, 64);
+    const noise = makeNoise(5, 32);
     for (let j = 0; j < S; j++) {
       for (let i = 0; i < S; i++) {
         const k = j * S + i;
-        const n = fbm(noise, i * 0.25, j * 0.25, 3);
+        const n = fbm(noise, i * 0.5, j * 0.5, 3);
         hgt[k] = n;
         rough[k] = 0.85 + (n - 0.5) * 0.3;
       }
     }
     return {
       roughnessMap: toTexture(grayCanvas(rough, S, S), { repeat: true }),
-      normalMap: toTexture(normalCanvas(hgt, S, S, 1.6, true), { repeat: true }),
+      normalMap: toTexture(normalCanvas(hgt, S, S, 0.9, true), { repeat: true }),
     };
   });
 }

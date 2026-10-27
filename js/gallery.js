@@ -5,10 +5,10 @@ import { createKnife } from './engine/knives.js';
 import { createStudioEnvironment } from './engine/environment.js';
 import { createContactShadow } from './engine/effects.js';
 import { HoloCycle } from './engine/hologram.js';
-import { clamp, damp, lerp, smoothstep, easeInOutCubic, range } from './engine/util.js';
+import { DEBUG, clamp, damp, lerp, smoothstep, easeInOutCubic, range, precompileAll } from './engine/util.js';
 
 export class Gallery {
-  constructor(cards, { reduced = false } = {}) {
+  constructor({ reduced = false, lite = false } = {}) {
     this.reduced = reduced;
     this.mode = 'bitmap';
     const attrs = { antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' };
@@ -24,11 +24,27 @@ export class Gallery {
     r.toneMappingExposure = 1.06;
     r.outputColorSpace = THREE.SRGBColorSpace;
     r.setClearColor(0x000000, 0);
+    r.debug.checkShaderErrors = DEBUG;
     this.env = createStudioEnvironment(r);
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 2);
     this.w = 0;
     this.h = 0;
-    this.items = cards.map((el, i) => this.createItem(el, i));
+    this.items = [];
+  }
+
+  // Les cartes passent en 3D une par une ; chacune garde son illustration
+  // vectorielle jusqu'à son premier rendu. `pause` rend la main au navigateur.
+  async addCards(cards, pause) {
+    for (let i = 0; i < cards.length; i++) {
+      const it = this.createItem(cards[i], i);
+      await pause();
+      const objects = [];
+      it.scene.traverse((o) => { if (o.isMesh || o.isLine || o.isPoints) objects.push(o); });
+      await precompileAll(this.renderer, objects, it.camera, it.scene);
+      if (this.w) this.sizeItem(it);
+      this.items.push(it);
+      await pause();
+    }
   }
 
   createItem(el, index) {
@@ -88,16 +104,18 @@ export class Gallery {
     this.h = h;
     this.renderer.setPixelRatio(this.dpr);
     this.renderer.setSize(w, h, false);
-    const pw = Math.round(w * this.dpr), ph = Math.round(h * this.dpr);
-    for (const it of this.items) {
-      it.camera.aspect = w / h;
-      // carte étroite (mobile) : on recule un peu pour garder la lame entière
-      it.camera.position.z = w / h < 1.15 ? 11.8 : 9.6;
-      it.camera.updateProjectionMatrix();
-      it.canvas.width = pw;
-      it.canvas.height = ph;
-      it.dirty = true;
-    }
+    for (const it of this.items) this.sizeItem(it);
+  }
+
+  sizeItem(it) {
+    const { w, h } = this;
+    it.camera.aspect = w / h;
+    // carte étroite (mobile) : on recule un peu pour garder la lame entière
+    it.camera.position.z = w / h < 1.15 ? 11.8 : 9.6;
+    it.camera.updateProjectionMatrix();
+    it.canvas.width = Math.round(w * this.dpr);
+    it.canvas.height = Math.round(h * this.dpr);
+    it.dirty = true;
   }
 
   animate(it, dt, t) {
@@ -175,19 +193,6 @@ export class Gallery {
     } else {
       it.ctx.clearRect(0, 0, it.canvas.width, it.canvas.height);
       it.ctx.drawImage(this.renderer.domElement, 0, 0, it.canvas.width, it.canvas.height);
-    }
-  }
-
-  // Compile les shaders en amont (évite les saccades au premier affichage).
-  async warm() {
-    for (const it of this.items) {
-      try {
-        await this.renderer.compileAsync(it.scene, it.camera);
-        // un rendu à vide envoie aussi géométries et textures au GPU
-        this.renderer.render(it.scene, it.camera);
-      } catch (e) {
-        /* compilation paresseuse en repli */
-      }
     }
   }
 }

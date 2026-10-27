@@ -7,7 +7,7 @@ import { createDust, createFloor, createMirror, createContactShadow } from '../e
 import { clamp, damp, lerp, smoothstep, easeInOutCubic, range } from '../engine/util.js';
 
 export class ViewerScene {
-  constructor(el, stage, { reduced = false } = {}) {
+  constructor(el, stage, { reduced = false, lite = false } = {}) {
     this.el = el;
     this.stage = stage;
     this.reduced = reduced;
@@ -27,7 +27,7 @@ export class ViewerScene {
     const key = new THREE.DirectionalLight(0xfff0dd, 1.1);
     key.position.set(-3, 5, 4);
     this.scene.add(key);
-    this.dust = createDust({ count: 220, box: [8, 4, 5], center: [0, 0.6, 0], seed: 8 });
+    this.dust = createDust({ count: lite ? 110 : 220, box: [8, 4, 5], center: [0, 0.6, 0], seed: 8 });
     this.dust.material.uniforms.uLightPos.value.set(-2, 6, 0);
     this.dust.material.uniforms.uLightDir.value.set(0.3, -1, 0.1).normalize();
     this.scene.add(this.dust);
