@@ -15,6 +15,12 @@ const PRODUCTS = {
   custom:    { name: 'Sur Mesure',   tag: 'Personnalisé — Unique', price: 'dès 50€', desc: 'Votre vision, nos mains. Forme de lame, couleur du filament, texte gravé (prénom, date, initiales). Chaque pièce unique, conçue spécialement pour vous.', material: 'Au choix', length: 'Sur devis', weight: 'Variable', delivery: '5-7 jours' }
 };
 
+// Demandes du formulaire de contact : relais FormSubmit (aucun serveur à maintenir).
+// L'adresse est découpée pour échapper aux collecteurs automatiques ; après activation,
+// FormSubmit fournit un alias aléatoire qui peut la remplacer dans FORM_ENDPOINT.
+const INBOX = ['Leo21polinice', 'outlook.pt'].join('@');
+const FORM_ENDPOINT = `https://formsubmit.co/ajax/${INBOX}`;
+
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
 
@@ -410,8 +416,22 @@ function prefillContact(objet, message) {
   if (!form) return;
   const btn = $('#submit-btn');
   const label = btn.querySelector('span') || btn;
-  const success = $('#form-success');
-  form.addEventListener('submit', (e) => {
+  const status = $('#form-status');
+  const honey = form.querySelector('input[name="_honey"]');
+
+  const showStatus = (text, isError, link) => {
+    status.textContent = text;
+    if (link) {
+      const a = document.createElement('a');
+      a.href = link.href;
+      a.textContent = link.text;
+      status.append(' ', a, '.');
+    }
+    status.classList.toggle('is-error', isError);
+    status.hidden = false;
+  };
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     let ok = true;
     $$('input[required], textarea[required]', form).forEach((field) => {
@@ -421,18 +441,44 @@ function prefillContact(objet, message) {
       if (!valid && ok) { field.focus(); ok = false; }
     });
     if (!ok) return;
+
+    const select = $('#fobjet');
+    const objet = select.options[select.selectedIndex].text;
+    const name = $('#fname').value.trim();
+    const email = $('#femail').value.trim();
+    const message = $('#fmsg').value.trim();
+    const subject = `Apex 3D — ${objet} — ${name}`;
+    // champ piège rempli : robot, on simule un succès sans rien envoyer
+    if (honey && honey.value) { form.reset(); showStatus('Message envoyé. Hugo vous répondra sous 24h.', false); return; }
+
     label.textContent = 'Envoi en cours...';
     btn.disabled = true;
-    setTimeout(() => {
-      label.textContent = 'Message envoyé !';
-      if (success) success.hidden = false;
+    status.hidden = true;
+    const mailto = `mailto:${INBOX}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`${message}\n\n— ${name} (${email})`)}`;
+    try {
+      const res = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ Nom: name, email, Objet: objet, Message: message, _replyto: email, _subject: subject, _template: 'table', _honey: '' }),
+        signal: typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(15000) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || String(data.success) !== 'true') {
+        const err = new Error(data.message || `HTTP ${res.status}`);
+        err.activation = /activat/i.test(data.message || '');
+        throw err;
+      }
       form.reset();
-      setTimeout(() => {
-        label.textContent = 'Envoyer le message';
-        btn.disabled = false;
-        if (success) success.hidden = true;
-      }, 4000);
-    }, 1200);
+      label.textContent = 'Message envoyé !';
+      showStatus('Message envoyé. Hugo vous répondra sous 24h.', false);
+      setTimeout(() => { label.textContent = 'Envoyer le message'; }, 4000);
+    } catch (err) {
+      label.textContent = 'Envoyer le message';
+      if (err.activation) showStatus("Formulaire en attente d'activation : un e-mail de confirmation vient d'être envoyé à la boîte de réception. Votre message n'a pas encore été transmis —", true, { href: mailto, text: "l'envoyer par e-mail" });
+      else showStatus("L'envoi a échoué (connexion ou service indisponible).", true, { href: mailto, text: 'Écrire directement par e-mail' });
+    } finally {
+      btn.disabled = false;
+    }
   });
 })();
 

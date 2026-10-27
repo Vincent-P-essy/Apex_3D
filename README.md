@@ -23,7 +23,16 @@ Pages du site exécuté localement. Le catalogue est une interface statique ; ce
 - **Fiche produit** : visionneuse 360° (glisser, molette, flèches du clavier) avec inertie.
 - **Du fichier à la lame** : séquence pilotée par le défilement — plan holographique coté, impression couche par couche avec tête d'imprimante, polissage, dépose dans un écrin velours.
 - **Atelier sur mesure** : le texte saisi est gravé en direct sur la lame (police et finition acier / or / noir au choix), puis pré-remplit la demande de devis.
-- Formulaire de contact, assistant de conversation côté navigateur, navigation clavier et lecteurs d'écran.
+- **Formulaire de contact** : envoi réel par e-mail via FormSubmit (sans serveur), champ piège anti-robots, repli `mailto:` si le service est injoignable.
+- Assistant de conversation côté navigateur, navigation clavier et lecteurs d'écran.
+
+## Formulaire de contact
+
+Les demandes sont relayées par [FormSubmit](https://formsubmit.co) vers la boîte définie par `INBOX` en tête de `script.js`.
+
+1. Premier envoi depuis le site en ligne : FormSubmit envoie un e-mail « Activate Form » à cette boîte (ce premier message n'est pas transmis).
+2. Cliquer sur le bouton d'activation : les messages suivants sont livrés, avec l'adresse du visiteur en réponse (Reply-To).
+3. Recommandé : remplacer l'adresse par l'alias aléatoire fourni par FormSubmit dans `FORM_ENDPOINT`, pour ne plus l'exposer dans le code source.
 
 ## Rendu 3D
 
@@ -44,7 +53,7 @@ Pages du site exécuté localement. Le catalogue est une interface statique ; ce
 ## Sécurité
 
 - Aucun script tiers à l'exécution : three.js r186 est servi depuis `vendor/three/` (provenance et empreintes dans [vendor/three/README.md](vendor/three/README.md)).
-- Politique CSP stricte (`script-src 'self'` + empreintes SHA-256 des deux scripts en ligne, `object-src 'none'`, `base-uri 'self'`).
+- Politique CSP stricte (`script-src 'self'` + empreintes SHA-256 des deux scripts en ligne, `connect-src` limité au site et à FormSubmit, `object-src 'none'`, `base-uri 'self'`).
 - Aucun gestionnaire d'évènement en ligne ; le texte saisi dans l'assistant est inséré en `textContent`.
 
 Après modification d'un script en ligne de `index.html` (détection initiale, import map), recalculer son empreinte et la reporter dans la balise CSP :
@@ -55,7 +64,7 @@ python3 -c "import re,hashlib,base64;s=open('index.html').read();[print(\"'sha25
 
 ## Technologies
 
-HTML5, CSS3 et JavaScript (modules ES) sans framework ni étape de compilation ; three.js pour WebGL2. Les polices sont chargées depuis Google Fonts. Aucun service de paiement ou backend de commande n’est fourni dans ce dépôt.
+HTML5, CSS3 et JavaScript (modules ES) sans framework ni étape de compilation ; three.js pour WebGL2. Les polices sont chargées depuis Google Fonts et les messages du formulaire passent par FormSubmit. Aucun service de paiement ou backend de commande n’est fourni dans ce dépôt.
 
 ## Lancer localement
 
@@ -73,7 +82,7 @@ Ouvrir <http://localhost:8000>.
 
 - `index.html` : site Apex 3D.
 - `styles.css` : mise en page, effets et styles responsive.
-- `script.js` : interface (chargement, filtres, fiche produit, formulaires, assistant).
+- `script.js` : interface (chargement, filtres, fiche produit, formulaires et envoi des demandes, assistant).
 - `chatbot.js` : base de réponses de l'assistant.
 - `js/main.js` : démarrage du rendu 3D et boucle d'animation.
 - `js/stage.js` : contexte WebGL partagé entre les sections, post-traitement, qualité adaptative.

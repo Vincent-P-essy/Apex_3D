@@ -353,7 +353,11 @@ html.is-loading { overflow: hidden; }
 .form-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' viewBox='0 0 10 6'%3E%3Cpath stroke='%23c9a84c' stroke-width='1.5' d='M1 1l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; cursor: pointer; }
 .form-group select option { background: var(--bg-2); color: var(--cream); }
 .contact-form .btn-primary { align-self: flex-start; }
-.form-success { color: var(--gold-hi); font-family: var(--font-mono); font-size: 0.85rem; }
+.form-status { color: var(--gold-hi); font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; }
+.form-status.is-error { color: #ef9a85; }
+.form-status a { color: var(--gold-light); }
+.form-note { font-size: 0.74rem; color: rgba(245, 240, 232, 0.4); }
+.form-honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
 /* ---- PIED DE PAGE ---- */
 .footer { background: var(--bg-1); border-top: 1px solid var(--line); padding: 3.5rem 0 2rem; }

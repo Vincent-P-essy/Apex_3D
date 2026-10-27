@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5ndIFT5WVnQ539uIkUvecyGodUkE2kRZ/HxxJWMkMhA=' 'sha256-kaEog0AsPo4/9apXRMvp5eF3zpfBg9ltlJNNm2KUPio='; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' mailto:" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5ndIFT5WVnQ539uIkUvecyGodUkE2kRZ/HxxJWMkMhA=' 'sha256-kaEog0AsPo4/9apXRMvp5eF3zpfBg9ltlJNNm2KUPio='; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'; form-action 'self' mailto:" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <script>(function (d) { var c = d.documentElement; c.className = c.className.replace('no-js', 'js') + (window.WebGL2RenderingContext ? ' has-gl' : ''); })(document);</script>
   <title>Apex 3D — Couteaux imprimés en 3D | Hugo Pouilliat</title>
@@ -435,7 +435,7 @@
               </a>
             </div>
           </div>
-          <form class="contact-form reveal" id="contact-form" novalidate>
+          <form class="contact-form reveal" id="contact-form" method="post" novalidate>
             <div class="form-row">
               <div class="form-group"><label for="fname">Nom</label><input type="text" id="fname" name="name" placeholder="Votre nom" autocomplete="name" required /></div>
               <div class="form-group"><label for="femail">Email</label><input type="email" id="femail" name="email" placeholder="votre@email.com" autocomplete="email" required /></div>
@@ -450,8 +450,10 @@
               </select>
             </div>
             <div class="form-group"><label for="fmsg">Message</label><textarea id="fmsg" name="message" rows="5" placeholder="Décrivez votre demande..." required></textarea></div>
+            <input type="text" name="_honey" class="form-honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
             <button type="submit" class="btn-primary btn-magnetic" id="submit-btn"><span>Envoyer le message</span></button>
-            <p id="form-success" class="form-success" role="status" hidden>Message envoyé. Hugo vous répondra sous 24h.</p>
+            <p id="form-status" class="form-status" role="status" aria-live="polite" hidden></p>
+            <p class="form-note">Envoi par e-mail via le service FormSubmit. Vos coordonnées servent uniquement à répondre à votre demande.</p>
           </form>
         </div>
       </div>
