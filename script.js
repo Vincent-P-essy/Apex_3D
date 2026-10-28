@@ -15,12 +15,28 @@ const PRODUCTS = {
   custom:    { name: 'Sur Mesure',   tag: 'Personnalisé — Unique', price: 'dès 50€', desc: 'Votre vision, nos mains. Forme de lame, couleur du filament, texte gravé (prénom, date, initiales). Chaque pièce unique, conçue spécialement pour vous.', material: 'Au choix', length: 'Sur devis', weight: 'Variable', delivery: '5-7 jours' }
 };
 
-// Demandes du formulaire de contact : relais FormSubmit (aucun serveur à maintenir).
-// L'adresse est découpée pour échapper aux collecteurs automatiques ; après activation,
-// FormSubmit fournit un alias aléatoire qui peut la remplacer dans INBOX.
+// Formulaire de contact : relais d'e-mail, sans serveur à maintenir.
+// - Web3Forms dès qu'une clé d'accès est renseignée (recommandé : API dédiée et fiable).
+//   Clé publique et gratuite : web3forms.com → saisir l'adresse INBOX → clé reçue par e-mail.
+// - Sinon FormSubmit (sans inscription ; activation par e-mail au premier envoi).
+// L'adresse est découpée pour échapper aux collecteurs automatiques.
+const WEB3FORMS_KEY = '';
 const INBOX = ['Leo21polinice', 'outlook.pt'].join('@');
-const FORM_ENDPOINT = `https://formsubmit.co/ajax/${INBOX}`; // envoi sans quitter la page
-const FORM_ACTION = `https://formsubmit.co/${INBOX}`; // envoi classique (repli)
+const RELAY = WEB3FORMS_KEY
+  ? {
+    name: 'Web3Forms',
+    direct: 'https://api.web3forms.com/submit', // envoi sans quitter la page
+    classic: 'https://api.web3forms.com/submit', // formulaire ordinaire (repli)
+    fields: (m) => ({ access_key: WEB3FORMS_KEY, subject: m.subject, from_name: 'Site Apex 3D', Nom: m.name, email: m.email, Objet: m.objet, Message: m.message }),
+    back: (url) => ({ redirect: url }),
+  }
+  : {
+    name: 'FormSubmit',
+    direct: `https://formsubmit.co/ajax/${INBOX}`,
+    classic: `https://formsubmit.co/${INBOX}`,
+    fields: (m) => ({ Nom: m.name, email: m.email, Objet: m.objet, Message: m.message, _replyto: m.email, _subject: m.subject, _template: 'table', _honey: '' }),
+    back: (url) => ({ _captcha: 'false', _next: url }),
+  };
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
@@ -424,21 +440,46 @@ function prefillContact(objet, message) {
   const label = btn.querySelector('span') || btn;
   const status = $('#form-status');
   const honey = form.querySelector('input[name="_honey"]');
+  const note = $('.form-note', form);
+  if (note) note.textContent = note.textContent.replace('FormSubmit', RELAY.name);
   const SENT = 'Message envoyé. Hugo vous répondra sous 24h.';
 
-  const showStatus = (text, isError, link) => {
+  // Message d'état, suivi d'actions éventuelles (lien ou bouton).
+  const showStatus = (text, isError, actions = []) => {
     status.textContent = text;
-    if (link) {
-      const a = document.createElement('a');
-      a.href = link.href;
-      a.textContent = link.text;
-      status.append(' ', a, '.');
+    for (const action of actions) {
+      const el = document.createElement(action.href ? 'a' : 'button');
+      el.className = 'form-status-action';
+      el.textContent = action.label;
+      if (action.href) el.href = action.href;
+      else {
+        el.type = 'button';
+        el.addEventListener('click', () => action.run(el));
+      }
+      status.append(' ', el);
     }
     status.classList.toggle('is-error', isError);
     status.hidden = false;
   };
 
-  // retour de l'envoi classique : FormSubmit redirige ici une fois le message reçu
+  const copyText = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.cssText = 'position:fixed;opacity:0';
+      document.body.append(area);
+      area.select();
+      const ok = document.execCommand('copy');
+      area.remove();
+      return ok;
+    }
+  };
+
+  // retour de l'envoi classique : le service redirige ici une fois le message reçu
   const params = new URLSearchParams(location.search);
   if (params.get('envoi') === 'ok') {
     showStatus(SENT, false);
@@ -447,16 +488,16 @@ function prefillContact(objet, message) {
     history.replaceState(null, '', location.pathname + (query ? `?${query}` : '') + location.hash);
   }
 
-  // Envoi classique : formulaire HTML ordinaire vers FormSubmit. C'est une navigation,
+  // Envoi classique : formulaire HTML ordinaire vers le relais. C'est une navigation,
   // donc ni CORS ni requête d'arrière-plan à bloquer ; le service renvoie ensuite ici.
   const sendClassic = (fields) => {
     const f = document.createElement('form');
     f.method = 'post';
-    f.action = FORM_ACTION;
+    f.action = RELAY.classic;
     f.acceptCharset = 'UTF-8';
     f.hidden = true;
     const next = `${location.origin}${location.pathname}?envoi=ok#contact`;
-    Object.entries({ ...fields, _captcha: 'false', _next: next }).forEach(([k, v]) => {
+    Object.entries({ ...fields, ...RELAY.back(next) }).forEach(([k, v]) => {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = k;
@@ -485,33 +526,43 @@ function prefillContact(objet, message) {
     const message = $('#fmsg').value.trim();
     const subject = `Apex 3D — ${objet} — ${name}`;
     // champ piège rempli : robot, on simule un succès sans rien envoyer
-    if (honey && honey.value) { form.reset(); showStatus('Message envoyé. Hugo vous répondra sous 24h.', false); return; }
+    if (honey && honey.value) { form.reset(); showStatus(SENT, false); return; }
 
-    const mailto = `mailto:${INBOX}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`${message}\n\n— ${name} (${email})`)}`;
-    if (navigator.onLine === false) {
-      showStatus("Pas de connexion internet : votre message n'a pas été envoyé. Réessayez une fois connecté, ou", true, { href: mailto, text: 'écrivez par e-mail' });
-      return;
-    }
-    const fields = { Nom: name, email, Objet: objet, Message: message, _replyto: email, _subject: subject, _template: 'table', _honey: '' };
-    label.textContent = 'Envoi en cours...';
-    btn.disabled = true;
-    status.hidden = true;
+    // dernier recours, toujours proposé : le message prêt à partir de la messagerie du visiteur
+    const signed = `${message}\n\n— ${name} (${email})`;
+    const manual = [
+      { label: 'Ouvrir ma messagerie', href: `mailto:${INBOX}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(signed)}` },
+      { label: 'Copier le message', run: async (el) => { el.textContent = (await copyText(`À : ${INBOX}\nObjet : ${subject}\n\n${signed}`)) ? 'Message copié ✓' : 'Copie impossible'; } },
+    ];
     const done = (text) => {
       label.textContent = text || 'Envoyer le message';
       btn.disabled = false;
     };
+    const giveUp = (reason) => {
+      done();
+      showStatus(`${reason} Votre message n'a pas été transmis : il est prêt à partir depuis votre messagerie.`, true, manual);
+    };
+    if (navigator.onLine === false) {
+      showStatus("Pas de connexion internet : votre message n'a pas été envoyé. Réessayez une fois connecté, ou envoyez-le depuis votre messagerie.", true, manual);
+      return;
+    }
+    const fields = RELAY.fields({ name, email, objet, message, subject });
+    label.textContent = 'Envoi en cours...';
+    btn.disabled = true;
+    status.hidden = true;
 
-    // Envoi direct : requête « simple » (formulaire encodé, aucune pré-vérification
-    // CORS à faire échouer), message d'attente à 6 s, abandon à 20 s.
+    // 1. Envoi direct : requête « simple » (formulaire encodé, aucune pré-vérification
+    //    CORS à faire échouer), message d'attente à 6 s, abandon à 15 s.
     const ctrl = new AbortController();
+    let timedOut = false;
     const slow = setTimeout(() => showStatus("Le service d'envoi met un peu de temps à répondre…", false), 6000);
-    const limit = setTimeout(() => ctrl.abort(), 20000);
+    const limit = setTimeout(() => { timedOut = true; ctrl.abort(); }, 15000);
     let res = null, data = null;
     try {
-      res = await fetch(FORM_ENDPOINT, { method: 'POST', headers: { Accept: 'application/json' }, body: new URLSearchParams(fields), signal: ctrl.signal });
+      res = await fetch(RELAY.direct, { method: 'POST', headers: { Accept: 'application/json' }, body: new URLSearchParams(fields), signal: ctrl.signal });
       data = await res.json().catch(() => null);
     } catch (err) {
-      console.warn('[Apex 3D] formulaire : envoi direct impossible —', err && err.name, err && err.message);
+      console.warn(`[Apex 3D] formulaire (${RELAY.name}) : envoi direct impossible —`, timedOut ? 'pas de réponse en 15 s' : `${err && err.name} ${err && err.message}`);
     } finally {
       clearTimeout(slow);
       clearTimeout(limit);
@@ -526,16 +577,28 @@ function prefillContact(objet, message) {
     }
     if (data && data.message) {
       // le service a répondu mais n'a pas transmis : activation en attente, ou autre motif
-      console.warn('[Apex 3D] formulaire : réponse du service —', res && res.status, data.message);
+      console.warn(`[Apex 3D] formulaire (${RELAY.name}) : réponse du service —`, res && res.status, data.message);
       done();
-      if (/activat|confirm/i.test(data.message)) showStatus("Formulaire en attente d'activation : un e-mail de confirmation vient d'être envoyé à la boîte de réception. Votre message n'a pas encore été transmis —", true, { href: mailto, text: "l'envoyer par e-mail" });
-      else showStatus(`Le service d'envoi a refusé le message (« ${data.message} »).`, true, { href: mailto, text: 'Écrire directement par e-mail' });
+      if (/activat|confirm/i.test(data.message)) showStatus("Formulaire en attente d'activation : un e-mail de confirmation vient d'être envoyé à la boîte de réception. Votre message n'a pas encore été transmis :", true, manual);
+      else showStatus(`Le service d'envoi a refusé le message (« ${data.message} »).`, true, manual);
       return;
     }
-    // aucune réponse exploitable (réseau, délai dépassé, requête bloquée) : envoi classique
-    console.warn('[Apex 3D] formulaire : bascule sur l\'envoi classique', res ? `HTTP ${res.status}` : 'sans réponse');
-    showStatus("Envoi direct indisponible : passage par la page sécurisée de FormSubmit…", false);
-    setTimeout(() => sendClassic(fields), 700);
+    // 2. Service muet : inutile d'insister par une autre voie qui attendrait autant.
+    if (timedOut) {
+      giveUp("Le service d'envoi ne répond pas pour le moment.");
+      return;
+    }
+    // 3. Réponse inexploitable (réseau, requête bloquée en route) : voie classique,
+    //    abandonnée à son tour (navigation annulée) si rien ne revient en 15 s.
+    console.warn(`[Apex 3D] formulaire (${RELAY.name}) : bascule sur l'envoi classique`, res ? `HTTP ${res.status}` : 'sans réponse');
+    showStatus('Envoi direct impossible : nouvel essai par la voie classique…', false);
+    setTimeout(() => {
+      sendClassic(fields);
+      setTimeout(() => {
+        window.stop();
+        giveUp("Le service d'envoi ne répond pas pour le moment.");
+      }, 15000);
+    }, 700);
   });
 })();
 

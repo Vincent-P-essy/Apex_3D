@@ -356,6 +356,8 @@ html.is-loading { overflow: hidden; }
 .form-status { color: var(--gold-hi); font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6; }
 .form-status.is-error { color: #ef9a85; }
 .form-status a { color: var(--gold-light); }
+.form-status-action { display: inline-block; margin: 0.55rem 0.5rem 0 0; padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 100px; background: rgba(201, 168, 76, 0.06); color: var(--gold-light); font: inherit; font-size: 0.8rem; line-height: 1.4; text-decoration: none; cursor: pointer; transition: border-color var(--transition), color var(--transition); }
+.form-status-action:hover, .form-status-action:focus-visible { border-color: var(--gold); color: var(--gold-hi); }
 .form-note { font-size: 0.74rem; color: rgba(245, 240, 232, 0.4); }
 .form-honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 

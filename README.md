@@ -23,23 +23,26 @@ Pages du site exécuté localement. Le catalogue est une interface statique ; ce
 - **Fiche produit** : visionneuse 360° (glisser, molette, flèches du clavier) avec inertie.
 - **Du fichier à la lame** : séquence pilotée par le défilement — plan holographique coté, impression couche par couche avec tête d'imprimante, polissage, dépose dans un écrin velours.
 - **Atelier sur mesure** : le texte saisi est gravé en direct sur la lame (police et finition acier / or / noir au choix), puis pré-remplit la demande de devis.
-- **Formulaire de contact** : envoi réel par e-mail via FormSubmit (sans serveur), champ piège anti-robots, bascule automatique sur l'envoi classique si l'envoi direct échoue, `mailto:` en dernier recours.
+- **Formulaire de contact** : envoi réel par e-mail via un relais sans serveur (Web3Forms ou FormSubmit), champ piège anti-robots, bascule automatique sur l'envoi classique, et jamais d'attente sans fin : message pré-rédigé à envoyer depuis sa messagerie en dernier recours.
 - Assistant de conversation côté navigateur, navigation clavier et lecteurs d'écran.
 
 ## Formulaire de contact
 
-Les demandes sont relayées par [FormSubmit](https://formsubmit.co) vers la boîte définie par `INBOX` en tête de `script.js`.
+Les demandes partent par un relais d'e-mail (aucun serveur à maintenir) vers la boîte définie par `INBOX` en tête de `script.js`.
 
-1. Premier envoi depuis le site en ligne : FormSubmit envoie un e-mail « Activate Form » à cette boîte (ce premier message n'est pas transmis).
-2. Cliquer sur le bouton d'activation : les messages suivants sont livrés, avec l'adresse du visiteur en réponse (Reply-To).
-3. Recommandé : remplacer l'adresse par l'alias aléatoire fourni par FormSubmit dans `INBOX`, pour ne plus l'exposer dans le code source.
+**Web3Forms (recommandé)** — API dédiée, gratuite jusqu'à 250 messages par mois :
+
+1. Sur <https://web3forms.com>, saisir l'adresse de réception (`INBOX`) et créer une clé d'accès : elle arrive par e-mail dans cette boîte (vérifier les indésirables).
+2. La coller dans `WEB3FORMS_KEY` en tête de `script.js`. La clé est publique par conception : elle ne permet que d'écrire à cette adresse.
+
+**FormSubmit** — utilisé tant qu'aucune clé n'est renseignée, sans inscription : le premier envoi déclenche un e-mail « Activate Form » à la boîte de réception (ce premier message n'est pas transmis) ; une fois le lien cliqué, les messages suivants sont livrés. Le service peut rester sans réponse pendant de longues périodes : c'est la raison de la recommandation ci-dessus.
 
 Acheminement, du plus confortable au plus robuste :
 
-- **Envoi direct** (`/ajax/`, sans quitter la page) en requête « simple » (formulaire encodé, en-tête `Accept` seul) : aucune pré-vérification CORS à faire échouer. Message d'attente à 6 s, abandon à 20 s.
-- **Envoi classique** si l'envoi direct n'obtient aucune réponse exploitable (réseau, délai dépassé, requête bloquée en route) : formulaire HTML ordinaire vers FormSubmit, qui renvoie ensuite sur le site (`?envoi=ok#contact`, confirmation affichée puis adresse nettoyée). La CSP l'autorise via `form-action`.
-- Si le service répond mais refuse (activation en attente, limite…), son motif est affiché, avec l'e-mail direct (`mailto:`) proposé ; hors connexion, rien n'est tenté.
-- Les causes d'échec sont détaillées dans la console du navigateur (`[Apex 3D] formulaire`).
+- **Envoi direct** (sans quitter la page) en requête « simple » (formulaire encodé, en-tête `Accept` seul) : aucune pré-vérification CORS à faire échouer. Message d'attente à 6 s, abandon à 15 s.
+- **Envoi classique** si l'envoi direct n'obtient aucune réponse exploitable (réseau, requête bloquée en route) : formulaire HTML ordinaire vers le relais, qui renvoie ensuite sur le site (`?envoi=ok#contact`, confirmation affichée puis adresse nettoyée). Navigation annulée (`window.stop()`) si rien ne revient en 15 s.
+- **Jamais d'attente sans fin** : si le relais est muet ou refuse (activation en attente, limite…), le motif est affiché avec deux actions — ouvrir la messagerie du visiteur avec le message pré-rédigé (`mailto:`), ou le copier. Hors connexion, rien n'est tenté.
+- La CSP n'autorise que ces deux relais (`connect-src`, `form-action`). Les causes d'échec sont détaillées dans la console du navigateur (`[Apex 3D] formulaire`).
 
 ## Rendu 3D
 
