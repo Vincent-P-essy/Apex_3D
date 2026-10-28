@@ -40,16 +40,24 @@ Les demandes sont relayées par [FormSubmit](https://formsubmit.co) vers la boî
 - **Matériaux** : acier brossé anisotrope, revêtement noir, or, laque, bois, G10, caoutchouc ; textures procédurales (damas, stonewash, gravures, logo) générées en canvas à la demande, modèle par modèle.
 - **Lumière** : boîtes à lumière HDR captées dans une carte d'environnement préfiltrée (PMREM), comme en photo produit.
 - **Extension de shader** : plan d'impression et section en fusion, lignes de couches, front de polissage, éclat sur le fil, gravure laser.
-- **Post-traitement** : bloom HDR, tone mapping neutre, grain argentique, vignettage, légère aberration chromatique (une seule passe finale).
+- **Post-traitement** : bloom HDR, tone mapping neutre, grain argentique, vignettage, légère aberration chromatique (une seule passe finale, avec un FXAA quand le MSAA est coupé).
 - **Deux contextes WebGL seulement** : un contexte « cinéma » déplacé dans la section la plus visible (hero, fabrication, atelier, fiche) et un contexte hors écran (`OffscreenCanvas`) qui transfère chaque carte sans copie (`transferToImageBitmap`).
-- **Qualité adaptative** : résolution réduite automatiquement si le GPU peine, puis bloom coupé ; rendu suspendu hors écran.
+- **Rendu suspendu hors écran** ; une section quittée ne garde un instantané que si elle reste visible.
+
+## Qualité adaptative
+
+- **Point de départ selon le GPU** (`js/engine/quality.js`, d'après le nom du pilote) : carte dédiée → MSAA 4× et bloom ; GPU intégré au processeur (Intel, Radeon Graphics…) → FXAA à la place du MSAA, résolution plafonnée ; rendu logiciel (SwiftShader, llvmpipe, « Microsoft Basic Render Driver ») → sans bloom, résolution réduite ; mobile → MSAA 2×.
+- **Régulateur en direct** : temps GPU réel de chaque image (`EXT_disjoint_timer_query_webgl2`, insensible à un écran bridé à 30 Hz) ou, à défaut, durée des images ; médiane sur ~1,5 s, et palier suivant si c'est trop lent : MSAA → FXAA, puis résolution, puis bloom. Jamais de remontée, donc pas d'oscillation. Le catalogue suit le même palier (résolution des cartes, cartes au repos rafraîchies moins souvent).
+- **Ordre de grandeur mesuré** (rendu logiciel, hero) : MSAA 4× ≈ 55 % du coût d'une image, bloom ≈ 38 %.
+- **Aucune compilation en cours de route** : nombre de lumières constant dans chaque scène (une lumière qui apparaît ferait recompiler tous les shaders), modèles de la fiche 3D compilés avant leur affichage, textures envoyées au GPU pendant la préparation.
+- **Aucun calcul long sur le fil principal** : textures procédurales, géométrie et arêtes des hologrammes sont des générateurs découpés en tranches de ~8 ms (`lazyValue` dans `js/engine/util.js`) ; même résultat au pixel près, calculé pendant les temps morts.
 
 ## Chargement
 
 - **Chemin critique minimal** : seul le hero est préparé derrière le voile de chargement (textures du modèle affiché, environnement lumineux, shaders). Le voile est plafonné à 3,5 s ; au-delà, la page s'affiche et le couteau apparaît dès qu'il est prêt.
 - **Constructions différées** : catalogue, séquence de fabrication, atelier de gravure et fiche 3D sont importés (`import()` dynamique) et construits à l'approche de leur section ou pendant les temps morts du navigateur, par petites tranches.
 - **Shaders** : compilés avec l'éclairage réel et la cible du post-traitement (mêmes variantes que le rendu), en parallèle quand le pilote expose `KHR_parallel_shader_compile`, sinon un par un entre deux images.
-- **Mode allégé** (écran tactile ou appareil modeste) : textures en demi-résolution, MSAA 2×, moins de particules, bloom ajouté en fondu après l'affichage.
+- **Mode allégé** (écran tactile, appareil modeste ou rendu logiciel) : textures en demi-résolution, moins de particules, bloom ajouté en fondu après l'affichage.
 - **Réseau** : les modules du chemin critique sont déclarés en `modulepreload` dans `index.html` (pas de cascade d'imports) — liste à tenir à jour si les imports changent.
 
 ## Accessibilité et repli
@@ -84,7 +92,7 @@ cd Apex_3D
 python3 -m http.server 8000
 ```
 
-Ouvrir <http://localhost:8000>. Ajouter `?debug` à l'adresse active la vérification détaillée des shaders (journal d'erreurs WebGL), désactivée par défaut car elle impose des allers-retours synchrones avec le GPU.
+Ouvrir <http://localhost:8000>. Ajouter `?debug` à l'adresse active la vérification détaillée des shaders (journal d'erreurs WebGL, désactivée par défaut car elle impose des allers-retours synchrones avec le GPU) et affiche dans la console le GPU détecté et les changements de palier. `?gpu=high|medium|low` force la classe de GPU (recette sur une machine qui n'est pas celle visée).
 
 ## Structure
 

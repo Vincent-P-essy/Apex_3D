@@ -100,9 +100,11 @@ function buildPrinter() {
   const shroud = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.3, 0.42), new THREE.MeshPhysicalMaterial({ color: 0x0e0e10, roughness: 0.6 }));
   shroud.position.set(0.32, 0.36, 0);
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.022, 16, 12), new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 1.4, 0.3), toneMapped: false }));
-  const glow = new THREE.PointLight(0xff8a3a, 2.5, 2.2, 2);
-  glow.position.y = -0.04;
-  head.add(carriage, block, nozzle, shroud, tip, glow);
+  // lumière de la buse hors du groupe masqué : elle reste comptée dans la scène
+  // (intensité nulle hors impression), sinon chaque apparition de l'imprimante
+  // changerait le nombre de lumières et ferait recompiler tous les shaders
+  const glow = new THREE.PointLight(0xff8a3a, 0, 2.2, 2);
+  head.add(carriage, block, nozzle, shroud, tip);
   const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 4.2, 20), metalMat(0xd0d3d8, 0.18));
   rail.rotation.z = HALF_PI;
   const rail2 = rail.clone();
@@ -227,7 +229,7 @@ export class ForgeScene {
     this.scene.add(this.grid);
 
     this.printer = buildPrinter();
-    this.scene.add(this.printer.group);
+    this.scene.add(this.printer.group, this.printer.glow);
     this.case = buildCase();
     this.scene.add(this.case.group);
 
@@ -328,6 +330,7 @@ export class ForgeScene {
     U.uTime.value = t;
     const wPrinter = smoothstep(0.24, 0.3, p) * (1 - smoothstep(0.5, 0.56, p));
     this.printer.group.visible = wPrinter > 0.001;
+    this.printer.glow.intensity = 0;
     if (this.printer.group.visible) {
       const pg = this.printer;
       pg.group.position.y = -(1 - wPrinter) * 2.2;
@@ -345,6 +348,7 @@ export class ForgeScene {
       tmp.lerp(tmp2, s);
       pg.head.position.set(tmp.x, Math.max(tmp.y, BED_TOP) + 0.035 + (1 - wPrinter) * 3, tmp.z);
       pg.gantry.position.y = pg.head.position.y;
+      pg.glow.position.set(pg.head.position.x, pg.head.position.y + pg.group.position.y - 0.04, pg.head.position.z);
       pg.glow.intensity = 3 * hot;
       pg.tip.visible = hot > 0.05;
     }

@@ -1,17 +1,19 @@
 // Catalogue : un second contexte WebGL hors écran (OffscreenCanvas) rend chaque
 // carte puis lui transfère l'image sans copie (ImageBitmap). Repli : drawImage.
 import * as THREE from 'three';
-import { createKnife } from './engine/knives.js';
+import { createKnife, prepareModelAsync } from './engine/knives.js';
 import { createStudioEnvironment } from './engine/environment.js';
 import { createContactShadow } from './engine/effects.js';
-import { HoloCycle } from './engine/hologram.js';
+import { HoloCycle, HOLO_IDS, prepareHolo } from './engine/hologram.js';
+import { LEVELS } from './engine/quality.js';
 import { DEBUG, clamp, damp, lerp, smoothstep, easeInOutCubic, range, precompileAll } from './engine/util.js';
 
 export class Gallery {
-  constructor({ reduced = false, lite = false } = {}) {
+  // tier : classe du GPU (quality.js) ; en rendu logiciel, pas de MSAA sur les cartes
+  constructor({ reduced = false, tier = 'high' } = {}) {
     this.reduced = reduced;
     this.mode = 'bitmap';
-    const attrs = { antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' };
+    const attrs = { antialias: tier !== 'low', alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' };
     try {
       if (typeof OffscreenCanvas === 'undefined' || typeof ImageBitmapRenderingContext === 'undefined') throw new Error('offscreen');
       this.renderer = new THREE.WebGLRenderer({ canvas: new OffscreenCanvas(2, 2), ...attrs });
@@ -26,16 +28,31 @@ export class Gallery {
     r.setClearColor(0x000000, 0);
     r.debug.checkShaderErrors = DEBUG;
     this.env = createStudioEnvironment(r);
-    this.dpr = Math.min(window.devicePixelRatio || 1, lite ? 1.5 : 2);
     this.w = 0;
     this.h = 0;
     this.items = [];
+    this.frameNo = 0;
+    this.setLevel(0);
+  }
+
+  // Palier de qualité partagé avec la scène principale : résolution des cartes
+  // (jamais sous 1, elles sont petites) et, quand le GPU peine, cartes au repos
+  // rafraîchies une image sur deux ou quatre.
+  setLevel(level) {
+    const dpr = Math.min(window.devicePixelRatio || 1, level === 0 ? 2 : Math.max(1, LEVELS[level].dpr));
+    this.skip = level >= 5 ? 3 : level >= 4 ? 1 : 0;
+    if (dpr === this.dpr) return;
+    this.dpr = dpr;
+    this.w = 0; // redimensionnement au prochain rendu
   }
 
   // Les cartes passent en 3D une par une ; chacune garde son illustration
   // vectorielle jusqu'à son premier rendu. `pause` rend la main au navigateur.
   async addCards(cards, pause) {
     for (let i = 0; i < cards.length; i++) {
+      // géométrie, textures et arêtes préparées par tranches avant l'instanciation
+      if (cards[i].dataset.model === 'custom') await prepareHolo(HOLO_IDS, pause);
+      else await prepareModelAsync(cards[i].dataset.model, pause);
       const it = this.createItem(cards[i], i);
       await pause();
       const objects = [];
@@ -56,7 +73,7 @@ export class Gallery {
     const camera = new THREE.PerspectiveCamera(20, 1.35, 0.1, 50);
     camera.position.set(0, 0.35, 9.6);
     camera.lookAt(0, 0.02, 0);
-    const it = { el, id, canvas, ctx, scene, camera, inside: 0, hover: 0, px: 0, py: 0, tx: 0, ty: 0, reveal: -1, phase: index * 1.7, dirty: true };
+    const it = { el, id, index, canvas, ctx, scene, camera, inside: 0, hover: 0, px: 0, py: 0, tx: 0, ty: 0, reveal: -1, phase: index * 1.7, dirty: true, wait: 0 };
 
     if (id === 'custom') {
       it.holo = new HoloCycle();
@@ -163,9 +180,11 @@ export class Gallery {
     it.shadow.rotation.y = it.rig.rotation.y;
   }
 
+  // Rend les cartes visibles ; renvoie vrai si au moins une a été dessinée.
   render(dt, t) {
     const vh = window.innerHeight;
-    let sized = false;
+    let sized = false, rendered = false;
+    this.frameNo++;
     for (const it of this.items) {
       const r = it.canvas.getBoundingClientRect();
       if (!(r.width > 0 && r.bottom > -40 && r.top < vh + 40)) continue;
@@ -174,17 +193,24 @@ export class Gallery {
         sized = true;
       }
       if (it.reveal < 0) it.reveal = 0;
-      const busy = !this.reduced || it.dirty || it.inside || it.hover > 0.01;
-      this.animate(it, dt, t);
-      if (!busy) continue;
+      // carte « active » : survolée, en cours d'apparition, ou hologramme animé
+      const animating = it.holo ? !this.reduced : it.reveal < 9;
+      const active = it.dirty || it.inside || it.hover > 0.01 || animating;
+      // temps cumulé : une carte sautée rattrape son animation à l'image suivante
+      it.wait += dt;
+      if (!active && (this.reduced || (this.skip && (this.frameNo + it.index) % (this.skip + 1)))) continue;
+      this.animate(it, it.wait, t);
+      it.wait = 0;
       this.renderer.render(it.scene, it.camera);
       this.present(it);
+      rendered = true;
       it.dirty = false;
       if (!it.ready) {
         it.ready = true;
         it.el.classList.add('is-3d');
       }
     }
+    return rendered;
   }
 
   present(it) {

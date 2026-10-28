@@ -3,18 +3,13 @@
 // Repère couteau : x le long de la lame (talon en 0, pointe en +x, pommeau en -x),
 // y vers le dos, z l'épaisseur. 1 unité ≈ 10 cm.
 import * as THREE from 'three';
-import { monotone, lerp, smoothstep, clamp } from './util.js';
+import { monotone, lerp, smoothstep, clamp, lazyValue } from './util.js';
 import { buildBlade, buildSweep, buildPlate, buildPin, buildGrommet } from './geometry.js';
-import { paintBlade, woodTextures, g10Textures, gripTextures, microTextures, memo } from './textures.js';
+import { paintBlade, woodTextures, g10Textures, gripTextures, microTextures } from './textures.js';
 import { knifeUniforms, metal, coating, polymer } from './materials.js';
 
 const GOLD = 0xf2c879;
 
-// Calcul différé et mémoïsé (textures générées au premier matériau qui les utilise).
-const once = (fn) => {
-  let v;
-  return () => (v ??= fn());
-};
 const STEEL = 0xc9cdd3;
 
 // Dents (crantage, scie) : fonction additive + points de rupture pour des angles nets.
@@ -43,7 +38,7 @@ function xToT(x, x0, x1) {
 const MODELS = {
   classique: {
     name: 'Le Classique',
-    build() {
+    *build() {
       const L = 2.05;
       const spine = monotone([[-0.06, 0.122], [0, 0.124], [0.55, 0.13], [1.1, 0.115], [1.5, 0.078], [1.8, 0.022], [2.05, -0.075]]);
       const edge = monotone([[-0.06, -0.17], [-0.01, -0.21], [0.03, -0.336], [0.15, -0.352], [0.85, -0.348], [1.3, -0.318], [1.64, -0.25], [1.9, -0.158], [2.05, -0.075]]);
@@ -52,7 +47,8 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0016 }, { v: 0.022, t: 0.005 }, { v: 0.5, t: T * 0.9 }, { v: 1, t: T }],
         strips: [{ group: 1 }, { group: 1, rows: 3, bulge: 0.05 }, { group: 0, rows: 2 }],
       });
-      const tex = once(() => paintBlade(blade.info, { rough: 0.2, brushed: 0.8, seed: 11, etch: { x: 0.36, vb: 0.66, size: 0.068, sub: 'PLA+ · FINI MAIN' } }));
+      yield;
+      const tex = lazyValue(() => paintBlade(blade.info, { rough: 0.2, brushed: 0.8, seed: 11, etch: { x: 0.36, vb: 0.66, size: 0.068, sub: 'PLA+ · FINI MAIN' } }));
       blade.info.engraveX = 1.02;
 
       const hx0 = -0.12, hx1 = -1.32;
@@ -60,6 +56,7 @@ const MODELS = {
       const Wd = monotone([[0, 0.057], [0.5, 0.062], [1, 0.056]]);
       const prof = (t) => ({ y: -0.012 - 0.035 * t * t, h: H(t), w: Wd(t) });
       const handle = buildSweep({ x0: hx0, x1: hx1, samples: 110, ring: 64, power: 3.0, profile: prof, endDome: 0.06, uScale: 3, vScale: 2 });
+      yield;
       const plate = buildPlate({
         x0: -0.125, x1: hx1, thickness: 0.021,
         top: (x) => { const p = prof(xToT(x, hx0, hx1)); return p.y + p.h + 0.0012; },
@@ -75,8 +72,10 @@ const MODELS = {
         g.translate(lerp(hx0, hx1, t), p.y, 0);
         return g;
       });
+      yield;
       return {
         blade,
+        textures: [tex, microTextures],
         parts: [
           { geo: blade.geometry, mat: ['flat', 'bevel', 'spine'] },
           { geo: handle, mat: 'handle' },
@@ -98,7 +97,7 @@ const MODELS = {
 
   ombre: {
     name: "L'Ombre",
-    build() {
+    *build() {
       const L = 1.55;
       const jimp = teeth(0.03, 0.27, 0.024, 0.006, 0.5);
       const spine = monotone([[-0.06, 0.13], [0, 0.13], [0.86, 0.13], [1.0, 0.12], [1.18, 0.083], [1.4, 0.008], [1.55, -0.045]]);
@@ -111,13 +110,15 @@ const MODELS = {
         },
         strips: [{ group: 1 }, { group: 1, rows: 2 }, { group: 0 }, { group: 0 }],
       });
-      const tex = once(() => paintBlade(blade.info, { rough: 0.46, brushed: 0.15, baseLum: 0.3, etchLight: true, seed: 23, etch: { x: 0.42, vb: 0.66, size: 0.06, sub: 'TACTICAL · PETG' } }));
+      yield;
+      const tex = lazyValue(() => paintBlade(blade.info, { rough: 0.46, brushed: 0.15, baseLum: 0.3, etchLight: true, seed: 23, etch: { x: 0.42, vb: 0.66, size: 0.06, sub: 'TACTICAL · PETG' } }));
 
       const hx0 = -0.03, hx1 = -1.2;
       const top = monotone([[0, 0.132], [0.3, 0.142], [0.75, 0.136], [1, 0.128]]);
       const bot = monotone([[0, -0.152], [0.12, -0.128], [0.24, -0.168], [0.42, -0.158], [0.75, -0.162], [1, -0.178]]);
       const prof = handleProfile(top, bot, (t) => 0.068 + 0.005 * Math.sin(Math.PI * t));
       const handle = buildSweep({ x0: hx0, x1: hx1, samples: 110, ring: 60, power: 2.4, profile: prof, endDome: 0.035, uScale: 4, vScale: 2 });
+      yield;
       const guard = (x) => 0.065 * (1 - smoothstep(-0.11, -0.03, x)) * smoothstep(-0.2, -0.11, x);
       const plate = buildPlate({
         x0: -0.04, x1: hx1, thickness: 0.026, samples: 120,
@@ -133,8 +134,10 @@ const MODELS = {
       const pr = prof(0.93);
       const lanyard = buildGrommet(0.022, 0.034, pr.w * 2 + 0.006);
       lanyard.translate(lerp(hx0, hx1, 0.93), pr.y, 0);
+      yield;
       return {
         blade,
+        textures: [tex, g10Textures],
         parts: [
           { geo: blade.geometry, mat: ['flat', 'bevel', 'flat'] },
           { geo: handle, mat: 'handle' },
@@ -155,7 +158,7 @@ const MODELS = {
 
   dore: {
     name: 'Le Doré',
-    build() {
+    *build() {
       const L = 2.0;
       const hh = monotone([[-0.06, 0.1], [0, 0.135], [0.14, 0.168], [0.5, 0.176], [1.0, 0.148], [1.45, 0.092], [1.8, 0.036], [2.0, 0]]);
       const spine = (x) => hh(x), edge = (x) => -hh(x);
@@ -164,7 +167,8 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0022 }, { v: 0.03, t: 0.0075 }, { v: 0.5, t: T }, { v: 0.97, t: 0.0075 }, { v: 1, t: 0.0022 }],
         strips: [{ group: 1 }, { group: 0, rows: 4, bulge: -0.05 }, { group: 0, rows: 4, bulge: -0.05 }, { group: 1 }],
       });
-      const tex = once(() => paintBlade(blade.info, { rough: 0.17, brushed: 0.25, seed: 5, deco: true, relief: 2.8 }));
+      yield;
+      const tex = lazyValue(() => paintBlade(blade.info, { rough: 0.17, brushed: 0.25, seed: 5, deco: true, relief: 2.8 }));
 
       // garde à quillons recourbés vers la lame
       const guard = buildSweep({
@@ -200,8 +204,10 @@ const MODELS = {
       const pommel = new THREE.IcosahedronGeometry(0.09, 1);
       pommel.scale(1.3, 1, 1);
       pommel.translate(gx1 - 0.1, 0, 0);
+      yield;
       return {
         blade,
+        textures: [tex, microTextures],
         parts: [
           { geo: blade.geometry, mat: ['flat', 'bevel', 'bevel'] },
           { geo: guard, mat: 'gold' },
@@ -223,7 +229,7 @@ const MODELS = {
 
   santoku: {
     name: 'Le Santoku',
-    build() {
+    *build() {
       const L = 1.8;
       const spine = monotone([[-0.06, 0.06], [-0.005, 0.068], [0.02, 0.128], [1.0, 0.13], [1.3, 0.105], [1.52, 0.035], [1.7, -0.1], [1.8, -0.262]]);
       const edge = monotone([[-0.06, -0.1], [-0.005, -0.118], [0.03, -0.333], [0.15, -0.338], [1.2, -0.336], [1.55, -0.318], [1.72, -0.29], [1.8, -0.262]]);
@@ -232,7 +238,8 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0013 }, { v: 0.025, t: 0.0042 }, { v: 0.44, t: T * 0.86 }, { v: 1, t: T }],
         strips: [{ group: 1 }, { group: 1, rows: 3, bulge: 0.05 }, { group: 0, rows: 2 }],
       });
-      const tex = once(() => paintBlade(blade.info, {
+      yield;
+      const tex = lazyValue(() => paintBlade(blade.info, {
         rough: 0.2, brushed: 0.35, seed: 31,
         damascus: { density: 64, warp: 2.4, contrast: 0.42 },
         dimples: { from: 0.16, to: 1.15, count: 9, vb: 0.25, rx: 0.04, ry: 0.02 },
@@ -244,8 +251,10 @@ const MODELS = {
         profile: (t) => ({ y: -0.03, h: lerp(0.108, 0.123, t), w: lerp(0.082, 0.095, t) }), uScale: 1, vScale: 1,
       });
       const endCap = buildSweep({ x0: -1.375, x1: -1.43, samples: 6, facets: 8, profile: () => ({ y: -0.03, h: 0.1235, w: 0.0955 }) });
+      yield;
       return {
         blade,
+        textures: [tex, woodTextures],
         parts: [
           { geo: blade.geometry, mat: ['flat', 'bevel', 'spine'] },
           { geo: ferrule, mat: 'gold' },
@@ -266,7 +275,7 @@ const MODELS = {
 
   ranger: {
     name: 'Le Ranger',
-    build() {
+    *build() {
       const L = 1.9;
       const saw = teeth(0.24, 0.9, 0.055, 0.034, 0.72);
       const spine = monotone([[-0.06, 0.15], [0, 0.15], [0.95, 0.15], [1.3, 0.13], [1.62, 0.055], [1.9, -0.06]]);
@@ -277,13 +286,15 @@ const MODELS = {
         section: (s, T) => [{ v: 0, t: 0.0022 }, { v: 0.035, t: 0.009 }, { v: 0.4, t: T }, { v: 0.55, t: T }, { v: 0.74, t: T }, { v: 1, t: T }],
         strips: [{ group: 1 }, { group: 1, rows: 2 }, { group: 0 }, { group: 0, rows: 6, bulge: (x) => -fuller(x) }, { group: 0 }],
       });
-      const tex = once(() => paintBlade(blade.info, { rough: 0.42, brushed: 0.2, stonewash: true, seed: 17, etch: { x: 0.36, vb: 0.47, size: 0.06, sub: 'RANGER · ABS' } }));
+      yield;
+      const tex = lazyValue(() => paintBlade(blade.info, { rough: 0.42, brushed: 0.2, stonewash: true, seed: 17, etch: { x: 0.36, vb: 0.47, size: 0.06, sub: 'RANGER · ABS' } }));
 
       const hx0 = -0.05, hx1 = -1.3;
       const top = monotone([[0, 0.146], [0.5, 0.152], [1, 0.14]]);
       const bot = monotone([[0, -0.172], [0.1, -0.15], [0.2, -0.18], [0.3, -0.152], [0.4, -0.18], [0.5, -0.155], [0.62, -0.182], [1, -0.186]]);
       const prof = handleProfile(top, bot, (t) => 0.078 + 0.008 * Math.sin(Math.PI * t));
       const handle = buildSweep({ x0: hx0, x1: hx1, samples: 130, ring: 60, power: 2.3, profile: prof, uScale: 1.6, vScale: 1.2 });
+      yield;
       const guard = buildSweep({
         x0: -0.37, x1: 0.23, samples: 40, ring: 40, power: 3.2,
         profile: () => ({ y: 0, h: 0.022, w: 0.064 }), startDome: 0.02, endDome: 0.02,
@@ -296,8 +307,10 @@ const MODELS = {
       });
       const lanyard = buildGrommet(0.024, 0.036, 0.083 * 2 + 0.01);
       lanyard.translate(hx1 - 0.075, -0.018, 0);
+      yield;
       return {
         blade,
+        textures: [tex, gripTextures],
         parts: [
           { geo: blade.geometry, mat: ['flat', 'bevel', 'flat'] },
           { geo: handle, mat: 'grip' },
@@ -319,18 +332,23 @@ const MODELS = {
 
 export const MODEL_IDS = Object.keys(MODELS);
 
-function definition(id) {
-  return memo('knife:' + id, () => {
-    const def = MODELS[id].build();
-    const box = new THREE.Box3();
-    def.parts.forEach((p) => {
-      p.geo.computeBoundingBox();
-      box.union(p.geo.boundingBox);
-    });
-    def.box = box;
-    return def;
-  });
+const definitions = new Map();
+function definitionOf(id) {
+  if (!definitions.has(id)) {
+    definitions.set(id, lazyValue(function* () {
+      const def = yield* MODELS[id].build();
+      const box = new THREE.Box3();
+      def.parts.forEach((p) => {
+        p.geo.computeBoundingBox();
+        box.union(p.geo.boundingBox);
+      });
+      def.box = box;
+      return def;
+    }));
+  }
+  return definitions.get(id);
 }
+const definition = (id) => definitionOf(id)();
 
 // Instancie un couteau : géométries et textures partagées, matériaux propres
 // (chaque instance anime indépendamment impression, éclat, gravure…).
@@ -370,11 +388,14 @@ export function knifeGeometries(id) {
   return { parts: def.parts.map((p) => p.geo), box: def.box };
 }
 
-// Préchauffe un modèle : géométrie, et textures si demandé (matériaux instanciés à blanc).
+// Prépare un modèle (géométrie, puis textures si demandé) d'un trait…
 export function prepareModel(id, { textures = true } = {}) {
   const def = definition(id);
-  if (!textures || def.warmed) return;
-  const U = knifeUniforms();
-  Object.keys(def.materials).forEach((k) => def.materials[k](U, {}).dispose());
-  def.warmed = true;
+  if (textures) def.textures.forEach((t) => t());
+}
+
+// … ou par tranches de quelques millisecondes, `pause` rendant la main au navigateur.
+export async function prepareModelAsync(id, pause, { textures = true } = {}) {
+  const def = await definitionOf(id).prepare(pause);
+  if (textures) for (const t of def.textures) await t.prepare(pause);
 }

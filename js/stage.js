@@ -4,10 +4,16 @@
 import * as THREE from 'three';
 import { createPost } from './engine/effects.js';
 import { createStudioEnvironment } from './engine/environment.js';
+import { LEVELS, GpuTimer } from './engine/quality.js';
 import { DEBUG, precompileAll } from './engine/util.js';
 
+const median = (a) => a.sort((x, y) => x - y)[a.length >> 1];
+const bloomMaterials = (b) => [b.materialHighPassFilter, ...b.separableBlurMaterials, b.compositeMaterial, b.blendMaterial];
+
 export class Stage {
-  constructor({ lite = false, canvas = document.createElement('canvas'), context } = {}) {
+  // level : palier de qualité de départ (quality.js) ; deferBloom : bloom ajouté
+  // après l'affichage (addBloom), hors du chemin critique
+  constructor({ canvas = document.createElement('canvas'), context, level = 0, deferBloom = false } = {}) {
     canvas.className = 'stage-canvas';
     canvas.setAttribute('aria-hidden', 'true');
     this.canvas = canvas;
@@ -17,19 +23,24 @@ export class Stage {
     renderer.setClearColor(0x050505, 1);
     renderer.debug.checkShaderErrors = DEBUG;
     this.renderer = renderer;
-    this.maxDpr = Math.min(window.devicePixelRatio || 1, lite ? 1.35 : 1.75);
-    this.dpr = this.maxDpr;
-    // mode allégé : bloom ajouté après l'affichage (addBloom), hors du chemin critique
-    this.post = createPost(renderer, { samples: Math.min(lite ? 2 : 4, renderer.capabilities.maxSamples || 0), bloom: !lite });
+    this.maxSamples = renderer.capabilities.maxSamples || 0;
+    this.level = level;
+    const L = LEVELS[level];
+    this.post = createPost(renderer, { samples: Math.min(L.msaa, this.maxSamples), bloom: L.bloom && !deferBloom });
     this.bloomGain = 1;
     this.env = createStudioEnvironment(renderer);
+    this.timer = new GpuTimer(renderer.getContext());
+    this.frameTimes = [];
+    this.gpuTimes = [];
+    this.windowT = 0;
+    this.listeners = [];
     this.hosts = [];
     this.active = null;
     this.w = 0;
     this.h = 0;
     this.time = 0;
-    this.slow = 0;
     this.lost = false;
+    this.applyLevel();
     canvas.addEventListener('webglcontextlost', (e) => {
       e.preventDefault();
       this.lost = true;
@@ -38,32 +49,96 @@ export class Stage {
   }
 
   // Compilation des shaders avec l'éclairage de la vraie scène et la cible du
-  // post-traitement, sans gel prolongé de l'interface.
-  async compile(host, onProgress) {
+  // post-traitement, sans gel prolongé de l'interface. `roots` limite la
+  // compilation à une partie de la scène (objet ajouté après coup).
+  async compile(host, onProgress, roots = [host.scene]) {
     const objects = [];
-    host.scene.traverse((o) => { if (o.isMesh || o.isPoints || o.isLine || o.isSprite) objects.push(o); });
+    for (const root of roots) root.traverse((o) => { if (o.isMesh || o.isPoints || o.isLine || o.isSprite) objects.push(o); });
     await precompileAll(this.renderer, objects, host.camera, host.scene, this.post.composer.renderTarget1, onProgress);
+  }
+
+  // Shaders plein écran (passes de post-traitement), compilés comme ceux des scènes.
+  async compilePasses(materials, onProgress) {
+    const quad = new THREE.PlaneGeometry(2, 2);
+    await precompileAll(this.renderer, materials.map((m) => new THREE.Mesh(quad, m)), new THREE.Camera(), new THREE.Scene(), this.post.composer.renderTarget1, onProgress);
+    quad.dispose();
+  }
+
+  // Finition et bloom prêts avant la première image (pas d'attente à l'affichage).
+  async compilePost(onProgress) {
+    const b = this.post.bloom;
+    await this.compilePasses([this.post.finish.material, ...(b ? bloomMaterials(b) : [])], onProgress);
   }
 
   // Bloom différé : shaders compilés en tâche de fond, puis intensité montée en
   // douceur (pas de saut de lumière à l'écran).
   async addBloom() {
-    if (this.post.bloom || this.lost) return;
+    if (this.post.bloom || this.lost || !LEVELS[this.level].bloom) return;
     const bloom = this.post.createBloom();
-    const quad = new THREE.PlaneGeometry(2, 2);
-    const materials = [bloom.materialHighPassFilter, ...bloom.separableBlurMaterials, bloom.compositeMaterial, bloom.blendMaterial];
-    await precompileAll(this.renderer, materials.map((m) => new THREE.Mesh(quad, m)), new THREE.Camera(), new THREE.Scene(), this.post.composer.renderTarget1);
-    quad.dispose();
+    await this.compilePasses(bloomMaterials(bloom));
     this.bloomGain = 0;
     this.post.addBloom(bloom);
   }
 
+  // Applique le palier courant : résolution, MSAA (ou FXAA), bloom.
+  applyLevel() {
+    const L = LEVELS[this.level];
+    this.maxDpr = Math.min(window.devicePixelRatio || 1, L.dpr);
+    this.dpr = this.maxDpr;
+    const samples = Math.min(L.msaa, this.maxSamples);
+    this.post.setSamples(samples);
+    this.post.finish.uniforms.uFxaa.value = samples ? 0 : 1;
+    this.listeners.forEach((fn) => fn(this.level));
+  }
+
+  // Abonnement aux changements de palier (le catalogue suit la scène principale).
+  onLevel(fn) {
+    this.listeners.push(fn);
+    fn(this.level);
+  }
+
+  // Palier suivant qui change effectivement quelque chose sur cet écran.
+  lower() {
+    const key = (l) => {
+      const L = LEVELS[l];
+      return [Math.min(window.devicePixelRatio || 1, L.dpr), Math.min(L.msaa, this.maxSamples), L.bloom].join();
+    };
+    const current = key(this.level);
+    for (let l = this.level + 1; l < LEVELS.length; l++) {
+      if (key(l) === current) continue;
+      this.level = l;
+      this.applyLevel();
+      if (DEBUG) console.info('[Apex 3D] qualité : palier', l, LEVELS[l]);
+      return;
+    }
+  }
+
+  // Régulateur, appelé à chaque image où la 3D a travaillé. Signal : temps GPU
+  // réel de la scène quand le navigateur le mesure (insensible à un écran bridé
+  // à 30 Hz), sinon durée des images. Médiane sur ~1,5 s (les à-coups isolés ne
+  // comptent pas) ; trop lent → palier suivant. Jamais de remontée : pas d'oscillation.
+  adapt(dt) {
+    this.timer.poll(this.gpuTimes);
+    this.frameTimes.push(dt);
+    this.windowT += dt;
+    if (this.windowT < 1.5 || this.frameTimes.length < 8) return;
+    const frame = median(this.frameTimes) * 1000;
+    const gpu = this.gpuTimes.length >= 4 ? median(this.gpuTimes) : null;
+    this.frameTimes.length = 0;
+    this.gpuTimes.length = 0;
+    this.windowT = 0;
+    const slow = gpu === null ? frame > 26 : gpu > 12 || (frame > 26 && gpu > 6);
+    if (slow) this.lower();
+  }
+
   add(host) {
-    const still = document.createElement('canvas');
-    still.className = 'stage-still';
-    still.setAttribute('aria-hidden', 'true');
-    host.el.appendChild(still);
-    host.still = still;
+    if (!host.noStill) {
+      const still = document.createElement('canvas');
+      still.className = 'stage-still';
+      still.setAttribute('aria-hidden', 'true');
+      host.el.appendChild(still);
+      host.still = still;
+    }
     this.hosts.push(host);
     return host;
   }
@@ -88,7 +163,9 @@ export class Stage {
     if (host === this.active) return;
     const prev = this.active;
     if (prev) {
-      this.snapshot(prev);
+      // instantané (une image de plus) seulement si la section quittée reste à
+      // l'écran et pas pour l'ouverture de la fiche, qui la recouvre
+      if (!host?.forced && this.onScreen(prev)) this.snapshot(prev);
       prev.onLeave?.();
     }
     this.active = host;
@@ -99,6 +176,11 @@ export class Stage {
     host.el.appendChild(this.canvas);
     this.resize(true);
     host.onEnter?.();
+  }
+
+  onScreen(host) {
+    const r = host.el.getBoundingClientRect();
+    return r.width > 0 && r.bottom > 0 && r.top < window.innerHeight;
   }
 
   snapshot(host) {
@@ -135,7 +217,7 @@ export class Stage {
     renderPass.scene = host.scene;
     renderPass.camera = host.camera;
     if (bloom) {
-      bloom.enabled = (p.bloom ?? 0.6) > 0 && this.slow < 2;
+      bloom.enabled = LEVELS[this.level].bloom && (p.bloom ?? 0.6) > 0;
       bloom.strength = (p.bloom ?? 0.6) * this.bloomGain;
       bloom.radius = p.bloomRadius ?? 0.5;
       bloom.threshold = p.threshold ?? 0.86;
@@ -147,21 +229,9 @@ export class Stage {
     u.uVignette.value = p.vignette ?? 0.5;
     u.uCA.value = p.ca ?? 0.002;
     u.uFade.value = p.fade ?? 1;
+    this.timer.begin();
     composer.render();
-  }
-
-  // Qualité adaptative : on baisse la résolution si le GPU peine.
-  adapt(dt) {
-    this.acc = (this.acc || 0) + dt;
-    this.frames = (this.frames || 0) + 1;
-    if (this.acc < 2) return;
-    const avg = this.acc / this.frames;
-    this.acc = 0;
-    this.frames = 0;
-    if (avg > 0.026) {
-      if (this.dpr > 1) this.dpr = Math.max(1, this.dpr - 0.25);
-      else this.slow++;
-    }
+    this.timer.end();
   }
 
   frame(dt) {
@@ -174,7 +244,6 @@ export class Stage {
     this.resize();
     host.update(dt, this.time);
     this.draw(host);
-    this.adapt(dt);
     return true;
   }
 }

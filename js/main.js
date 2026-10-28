@@ -6,14 +6,14 @@ import { Stage } from './stage.js';
 import { HeroScene } from './scenes/hero.js';
 import { prepareModel } from './engine/knives.js';
 import { quality } from './engine/textures.js';
-import { nextFrame } from './engine/util.js';
+import { gpuTier, startLevel } from './engine/quality.js';
+import { DEBUG, nextFrame, idle as pause } from './engine/util.js';
 
 const state = (window.__apex = window.__apex || {});
 state.progress = state.progress || 0;
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-// mode allégé : écran tactile ou appareil modeste (textures réduites, bloom différé)
-const lite = matchMedia('(pointer: coarse)').matches || (navigator.deviceMemory || 8) <= 4;
+const mobile = matchMedia('(pointer: coarse)').matches;
 const q = (s) => document.querySelector(s);
 
 function progress(p) {
@@ -26,12 +26,6 @@ async function fonts(faces, timeout) {
   const loads = Promise.all(faces.map((f) => document.fonts.load(f).catch(() => null)));
   await Promise.race([loads, new Promise((r) => setTimeout(r, timeout))]);
 }
-
-// Temps mort du navigateur (ou image suivante à défaut).
-const pause = () => new Promise((resolve) => {
-  if (window.requestIdleCallback) requestIdleCallback(() => resolve(), { timeout: 250 });
-  else setTimeout(resolve, 16);
-});
 
 // Constructions différées : en file pendant les temps morts, ou immédiatement
 // (en parallèle, par petites tranches) pour la section vers laquelle on se dirige.
@@ -76,6 +70,17 @@ async function boot() {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('webgl2', { alpha: false, antialias: false, stencil: false, powerPreference: 'high-performance' });
   if (!context) throw new Error('WebGL2 indisponible');
+  // niveau graphique de départ d'après le GPU (rendu logiciel, intégré, dédié) ;
+  // ?gpu=high|medium|low dans l'adresse force la classe (recette, comparaisons)
+  const detected = gpuTier(context);
+  const forced = new URLSearchParams(location.search).get('gpu');
+  const tier = ['high', 'medium', 'low'].includes(forced) ? forced : detected.tier;
+  const name = detected.name;
+  // mode allégé : écran tactile, appareil modeste ou rendu logiciel
+  // (textures en demi-résolution, moins de particules, bloom différé)
+  const lite = mobile || (navigator.deviceMemory || 8) <= 4 || tier === 'low';
+  const level = startLevel(tier, { mobile, lite });
+  if (DEBUG) console.info('[Apex 3D] GPU :', name || '?', '→', tier, ', palier', level);
   quality.tex = lite ? 0.5 : 1;
   // polices de la gravure du logo (attente plafonnée), puis textures du hero peintes
   // avant l'initialisation du GPU : les canvas n'attendent pas un GPU déjà occupé
@@ -84,12 +89,13 @@ async function boot() {
   prepareModel('classique');
   progress(0.2);
   await nextFrame();
-  const stage = new Stage({ lite, canvas, context });
+  const stage = new Stage({ canvas, context, level, deferBloom: lite });
   progress(0.55);
   await nextFrame();
   const hero = stage.add(new HeroScene(q('[data-stage="hero"]'), stage, { reduced, lite }));
   progress(0.62);
-  await stage.compile(hero, (k) => progress(0.62 + 0.3 * k));
+  await stage.compile(hero, (k) => progress(0.62 + 0.24 * k));
+  await stage.compilePost((k) => progress(0.86 + 0.06 * k));
   // première image hors écran (sous le voile de chargement) : passes finales compilées
   stage.frame(0.016);
   document.documentElement.classList.add('webgl');
@@ -103,8 +109,10 @@ async function boot() {
     last = now;
     // rien à rendre tant que le voile de chargement couvre la page
     if (state.introRequested) {
-      stage.frame(dt);
-      if (gallery && !modalOpen) gallery.render(dt, stage.time);
+      const drawn = stage.frame(dt);
+      const cards = gallery && !modalOpen ? gallery.render(dt, stage.time) : false;
+      // le régulateur ne juge que les images où la 3D a réellement travaillé
+      if (drawn || cards) stage.adapt(dt);
     }
     requestAnimationFrame(loop);
   };
@@ -121,14 +129,16 @@ async function boot() {
   if (lite && stage.renderer.extensions.has('KHR_parallel_shader_compile')) queue.request('bloom', true);
   queue.add('gallery', async () => {
     const { Gallery } = await import('./gallery.js');
-    gallery = new Gallery({ reduced, lite });
+    gallery = new Gallery({ reduced, tier });
+    stage.onLevel((l) => gallery.setLevel(l));
     await pause();
     await gallery.addCards(Array.from(document.querySelectorAll('.card[data-model]')), pause);
   });
   queue.add('forge', async () => {
     const el = q('[data-stage="forge"]');
     if (!el) return;
-    const { ForgeScene } = await import('./scenes/forge.js');
+    const [{ ForgeScene }, { prepareHolo }] = await Promise.all([import('./scenes/forge.js'), import('./engine/hologram.js')]);
+    await prepareHolo(['classique'], pause);
     const forge = new ForgeScene(el, q('#processus'), stage, { reduced, lite });
     await pause();
     await stage.compile(forge);
@@ -146,13 +156,15 @@ async function boot() {
     await stage.compile(engrave);
     stage.add(engrave);
   });
-  const ensureViewer = async () => {
-    if (!viewer) {
-      const { ViewerScene } = await import('./scenes/viewer.js');
-      viewer ??= stage.add(new ViewerScene(q('[data-stage="viewer"]'), stage, { reduced, lite }));
-    }
+  // fiche 3D : décor compilé d'avance, chaque modèle préparé à son ouverture
+  let viewerReady = null;
+  const ensureViewer = () => (viewerReady ??= (async () => {
+    const { ViewerScene } = await import('./scenes/viewer.js');
+    const v = new ViewerScene(q('[data-stage="viewer"]'), stage, { reduced, lite });
+    await stage.compile(v);
+    viewer = stage.add(v);
     return viewer;
-  };
+  })());
   queue.add('viewer', ensureViewer);
 
   window.addEventListener('apex:modal', async (e) => {
@@ -160,7 +172,7 @@ async function boot() {
     modalOpen = !!id;
     if (id) {
       const v = await ensureViewer();
-      if (modalOpen) v.show(id);
+      if (modalOpen) v.show(id).catch((err) => console.warn('[Apex 3D] fiche', err));
     } else if (viewer) {
       viewer.hide();
     }

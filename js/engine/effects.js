@@ -297,8 +297,9 @@ export function createContactShadow(opacity = 0.75) {
 // ---------------------------------------------------------------------------
 // Post-traitement
 // ---------------------------------------------------------------------------
-// Passe finale unique (remplace OutputPass) : aberration chromatique, tone mapping
-// neutre et conversion sRGB, puis vignettage et grain dans l'espace d'affichage.
+// Passe finale unique (remplace OutputPass) : anticrénelage FXAA quand le MSAA est
+// coupé, aberration chromatique, tone mapping neutre et conversion sRGB, puis
+// vignettage et grain dans l'espace d'affichage.
 function finishMaterial() {
   return new THREE.RawShaderMaterial({
     name: 'ApexFinish',
@@ -311,6 +312,7 @@ function finishMaterial() {
       uVignette: { value: 0.5 },
       uCA: { value: 0.0022 },
       uFade: { value: 1 },
+      uFxaa: { value: 0 },
       uRes: { value: new THREE.Vector2(1, 1) },
     },
     vertexShader: /* glsl */`
@@ -324,18 +326,49 @@ function finishMaterial() {
     fragmentShader: /* glsl */`
       precision highp float;
       uniform sampler2D tDiffuse;
-      uniform float uTime, uGrain, uVignette, uCA, uFade;
+      uniform float uTime, uGrain, uVignette, uCA, uFade, uFxaa;
       uniform vec2 uRes;
       #include <tonemapping_pars_fragment>
       #include <colorspace_pars_fragment>
       varying vec2 vUv;
       float hash( vec2 p ) { p = fract( p * vec2( 233.34, 851.73 ) ); p += dot( p, p + 23.45 ); return fract( p.x * p.y ); }
+      // luminance après compression (Reinhard) : détection d'arêtes stable en HDR
+      float lumaOf( vec3 c ) { return dot( c / ( 1.0 + c ), vec3( 0.299, 0.587, 0.114 ) ); }
+      // FXAA compact (d'après T. Lottes) : 5 lectures sur les zones unies, 9 sur les arêtes
+      vec3 fxaa( vec2 uv ) {
+        vec2 px = 1.0 / uRes;
+        vec3 m = texture2D( tDiffuse, uv ).rgb;
+        float lNW = lumaOf( texture2D( tDiffuse, uv + vec2( -1.0, -1.0 ) * px ).rgb );
+        float lNE = lumaOf( texture2D( tDiffuse, uv + vec2( 1.0, -1.0 ) * px ).rgb );
+        float lSW = lumaOf( texture2D( tDiffuse, uv + vec2( -1.0, 1.0 ) * px ).rgb );
+        float lSE = lumaOf( texture2D( tDiffuse, uv + vec2( 1.0, 1.0 ) * px ).rgb );
+        float lM = lumaOf( m );
+        float lMin = min( lM, min( min( lNW, lNE ), min( lSW, lSE ) ) );
+        float lMax = max( lM, max( max( lNW, lNE ), max( lSW, lSE ) ) );
+        if ( lMax - lMin < max( 0.0312, lMax * 0.125 ) ) return m;
+        vec2 dir = vec2( ( lSW + lSE ) - ( lNW + lNE ), ( lNW + lSW ) - ( lNE + lSE ) );
+        float reduce = max( ( lNW + lNE + lSW + lSE ) * 0.03125, 0.0078125 );
+        dir = clamp( dir / ( min( abs( dir.x ), abs( dir.y ) ) + reduce ), -8.0, 8.0 ) * px;
+        vec3 a = 0.5 * ( texture2D( tDiffuse, uv - dir * 0.1667 ).rgb + texture2D( tDiffuse, uv + dir * 0.1667 ).rgb );
+        vec3 b = a * 0.5 + 0.25 * ( texture2D( tDiffuse, uv - dir * 0.5 ).rgb + texture2D( tDiffuse, uv + dir * 0.5 ).rgb );
+        float lB = lumaOf( b );
+        return ( lB < lMin || lB > lMax ) ? a : b;
+      }
       void main() {
         vec2 d = vUv - 0.5;
         vec2 off = d * dot( d, d ) * uCA * 4.0;
-        vec4 c = texture2D( tDiffuse, vUv );
-        c.r = texture2D( tDiffuse, vUv - off ).r;
-        c.b = texture2D( tDiffuse, vUv + off ).b;
+        vec3 base;
+        float k = 1.0;
+        if ( uFxaa > 0.5 ) {
+          base = fxaa( vUv );
+          // aberration seulement là où le décalage dépasse le pixel : le centre reste lissé
+          k = smoothstep( 0.0, 1.5, length( off * uRes ) );
+        } else {
+          base = texture2D( tDiffuse, vUv ).rgb;
+        }
+        vec4 c = vec4( base, 1.0 );
+        c.r = mix( base.r, texture2D( tDiffuse, vUv - off ).r, k );
+        c.b = mix( base.b, texture2D( tDiffuse, vUv + off ).b, k );
         c.rgb = NeutralToneMapping( c.rgb );
         vec3 col = sRGBTransferOETF( vec4( c.rgb, 1.0 ) ).rgb;
         float vig = smoothstep( 0.95, 0.25, length( d * vec2( 1.0, 1.15 ) ) );
@@ -363,6 +396,14 @@ export function createPost(renderer, { samples = 4, bloom: withBloom = true } = 
     addBloom(pass) {
       composer.insertPass(pass, 1);
       post.bloom = pass;
+    },
+    // MSAA de la cible de rendu (réallouée au prochain usage si le nombre change)
+    setSamples(n) {
+      for (const rt of [composer.renderTarget1, composer.renderTarget2]) {
+        if (rt.samples === n) continue;
+        rt.samples = n;
+        rt.dispose();
+      }
     },
     setSize(w, h, dpr) {
       composer.setPixelRatio(dpr);

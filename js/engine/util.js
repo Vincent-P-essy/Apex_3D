@@ -91,6 +91,55 @@ export function monotone(points) {
 
 export const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => resolve()));
 
+// Rend la main au navigateur le temps d'une tâche (scheduler.yield si disponible).
+export const yieldTask = () => (globalThis.scheduler?.yield ? globalThis.scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
+
+// Attend un temps mort du navigateur (ou l'image suivante à défaut).
+export const idle = () => new Promise((resolve) => {
+  if (window.requestIdleCallback) requestIdleCallback(() => resolve(), { timeout: 250 });
+  else setTimeout(resolve, 16);
+});
+
+// Travail découpé en étapes : un générateur cède la main (yield) entre de petits
+// morceaux de calcul. finish() l'exécute d'un trait.
+export function finish(steps) {
+  let r = steps.next();
+  while (!r.done) r = steps.next();
+  return r.value;
+}
+
+// Valeur calculée une seule fois par un générateur : get() la termine d'un trait,
+// get.prepare(pause) l'avance par tranches de ~8 ms entre lesquelles le navigateur
+// reprend la main. Un calcul entamé reprend là où il s'était arrêté.
+export function lazyValue(make) {
+  let steps = null, done = false, value;
+  const advance = () => {
+    steps ??= make();
+    const r = steps.next();
+    if (r.done) {
+      done = true;
+      value = r.value;
+      steps = null;
+    }
+  };
+  const get = () => {
+    while (!done) advance();
+    return value;
+  };
+  get.prepare = async (pause, budget = 8) => {
+    let t = performance.now();
+    while (!done) {
+      advance();
+      if (!done && performance.now() - t > budget) {
+        await pause();
+        t = performance.now();
+      }
+    }
+    return value;
+  };
+  return get;
+}
+
 // Vérification détaillée des shaders (journal d'erreurs) : activée avec ?debug.
 // Hors débogage, elle coûte plusieurs allers-retours GPU synchrones par programme.
 export const DEBUG = /[?&]debug\b/.test(location.search);
@@ -100,6 +149,7 @@ export const DEBUG = /[?&]debug\b/.test(location.search);
 // programme), puis lit ses uniforms : sans KHR_parallel_shader_compile, compileAsync
 // rend la main avant la fin de l'édition de liens et l'attente retomberait sur le
 // premier rendu.
+// Les textures sont aussi envoyées au GPU ici plutôt qu'au premier affichage.
 export async function precompile(renderer, object, camera, scene, target = null) {
   try {
     const previous = renderer.getRenderTarget();
@@ -108,10 +158,20 @@ export async function precompile(renderer, object, camera, scene, target = null)
     renderer.setRenderTarget(previous);
     await pending;
     const materials = Array.isArray(object.material) ? object.material : [object.material];
-    for (const m of materials) if (m) renderer.properties.get(m).currentProgram?.getUniforms();
+    for (const m of materials) {
+      if (!m) continue;
+      renderer.properties.get(m).currentProgram?.getUniforms();
+      uploadTextures(renderer, m);
+    }
   } catch (e) {
     /* compilation à la volée au premier rendu */
   }
+}
+
+function uploadTextures(renderer, material) {
+  const send = (v) => { if (v && v.isTexture && !v.isRenderTargetTexture) renderer.initTexture(v); };
+  for (const k in material) send(material[k]);
+  if (material.uniforms) for (const k in material.uniforms) send(material.uniforms[k].value);
 }
 
 // Compile une liste d'objets : d'un bloc si le pilote compile en parallèle

@@ -1,10 +1,10 @@
 // Visionneuse 360° de la fiche produit : glisser pour tourner (avec inertie),
 // molette / pincement pour zoomer, flèches au clavier.
 import * as THREE from 'three';
-import { createKnife } from '../engine/knives.js';
-import { HoloCycle } from '../engine/hologram.js';
+import { createKnife, prepareModelAsync } from '../engine/knives.js';
+import { HoloCycle, HOLO_IDS, prepareHolo } from '../engine/hologram.js';
 import { createDust, createFloor, createMirror, createContactShadow } from '../engine/effects.js';
-import { clamp, damp, lerp, smoothstep, easeInOutCubic, range } from '../engine/util.js';
+import { clamp, damp, lerp, smoothstep, easeInOutCubic, range, yieldTask } from '../engine/util.js';
 
 export class ViewerScene {
   constructor(el, stage, { reduced = false, lite = false } = {}) {
@@ -12,6 +12,7 @@ export class ViewerScene {
     this.stage = stage;
     this.reduced = reduced;
     this.forced = false;
+    this.noStill = true; // la fiche se referme : jamais d'instantané à garder
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x070707);
     this.scene.environment = stage.env;
@@ -107,12 +108,28 @@ export class ViewerScene {
     return it;
   }
 
-  show(id) {
+  // Ouverture de la fiche : le modèle est préparé (géométrie, textures) par
+  // tranches, puis ses shaders compilés avant d'apparaître, sans figer la page.
+  async show(id) {
+    const token = (this.pending = {});
+    this.forced = true;
     for (const it of this.items.values()) {
       it.object.visible = false;
       if (it.mirror) it.mirror.object.visible = false;
     }
-    const it = this.item(id);
+    this.current = null;
+    this.shadow.material.opacity = 0;
+    let it = this.items.get(id);
+    if (!it) {
+      if (id === 'custom') await prepareHolo(HOLO_IDS, yieldTask);
+      else await prepareModelAsync(id, yieldTask);
+      if (this.pending !== token) return;
+      it = this.item(id);
+      it.object.visible = false;
+      if (it.mirror) it.mirror.object.visible = false;
+      await this.stage.compile(this, null, [it.object, it.mirror?.object].filter(Boolean));
+      if (this.pending !== token) return;
+    }
     it.object.visible = true;
     if (it.mirror) it.mirror.object.visible = true;
     this.current = it;
@@ -127,6 +144,7 @@ export class ViewerScene {
 
   hide() {
     this.forced = false;
+    this.pending = null;
   }
 
   resize(w, h) {

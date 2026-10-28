@@ -1,7 +1,9 @@
 // Textures procédurales (générées une seule fois, partagées par tous les rendus).
-// Tout est dessiné en canvas 2D : aucune image externe à télécharger.
+// Tout est dessiné en canvas 2D : aucune image externe à télécharger. Les calculs
+// pixel par pixel sont des générateurs qui cèdent la main toutes les quelques
+// lignes : ils peuvent s'exécuter d'un trait ou par tranches (voir lazyValue).
 import * as THREE from 'three';
-import { clamp, smoothstep, lerp, makeNoise, fbm, rng } from './util.js';
+import { clamp, smoothstep, lerp, makeNoise, fbm, rng, finish, lazyValue } from './util.js';
 
 const cache = new Map();
 export const memo = (key, build) => {
@@ -44,21 +46,24 @@ function toTexture(canvas, { srgb = false, repeat = false } = {}) {
 }
 
 // Écrit un champ scalaire [0,1] dans un canvas en niveaux de gris.
-function grayCanvas(field, w, h) {
+function* grayCanvas(field, w, h) {
   const c = makeCanvas(w, h);
   const ctx = c.getContext('2d');
   const img = ctx.createImageData(w, h);
-  for (let i = 0, p = 0; i < field.length; i++, p += 4) {
-    const v = clamp(field[i]) * 255;
-    img.data[p] = img.data[p + 1] = img.data[p + 2] = v;
-    img.data[p + 3] = 255;
+  for (let y = 0, p = 0; y < h; y++) {
+    for (let i = y * w, end = i + w; i < end; i++, p += 4) {
+      const v = clamp(field[i]) * 255;
+      img.data[p] = img.data[p + 1] = img.data[p + 2] = v;
+      img.data[p + 3] = 255;
+    }
+    if ((y & 31) === 31) yield;
   }
   ctx.putImageData(img, 0, 0);
   return c;
 }
 
 // Carte de normales (espace tangent) à partir d'un champ de hauteur.
-function normalCanvas(height, w, h, strength, wrap = false) {
+function* normalCanvas(height, w, h, strength, wrap = false) {
   const c = makeCanvas(w, h);
   const ctx = c.getContext('2d');
   const img = ctx.createImageData(w, h);
@@ -77,6 +82,7 @@ function normalCanvas(height, w, h, strength, wrap = false) {
       img.data[p + 2] = (inv * 0.5 + 0.5) * 255;
       img.data[p + 3] = 255;
     }
+    if ((y & 15) === 15) yield;
   }
   ctx.putImageData(img, 0, 0);
   return c;
@@ -94,7 +100,7 @@ function readMask(canvas) {
 // Lames : couleur, rugosité et relief, dans le repère UV planaire de la lame.
 // info = { x0, L, yMin, yMax, spine(x), edge(x) } (fourni par buildBlade)
 // ---------------------------------------------------------------------------
-export function paintBlade(info, opts = {}) {
+export function* paintBlade(info, opts = {}) {
   const W = Math.round(1024 * quality.tex), H = Math.round(256 * quality.tex);
   const N = W * H;
   const px1 = W / 1024; // tailles de trait / motifs exprimées pour 1024 px
@@ -120,6 +126,7 @@ export function paintBlade(info, opts = {}) {
     const ctx = maskCtx('stonewash');
     const r = rng(opts.seed ?? 7);
     for (let i = 0, n = Math.round(2600 * px1 * px1); i < n; i++) {
+      if (i % 400 === 399) yield;
       const g = Math.floor(r() * 255);
       ctx.fillStyle = `rgba(${g},${g},${g},${0.04 + r() * 0.08})`;
       ctx.beginPath();
@@ -127,6 +134,7 @@ export function paintBlade(info, opts = {}) {
       ctx.fill();
     }
     ctx.lineWidth = 0.6 * px1;
+    yield;
     for (let i = 0, n = Math.round(700 * px1 * px1); i < n; i++) {
       const x = r() * W, y = r() * H, a = r() * Math.PI * 2, l = (4 + r() * 22) * px1;
       ctx.strokeStyle = `rgba(255,255,255,${0.05 + r() * 0.12})`;
@@ -220,8 +228,12 @@ export function paintBlade(info, opts = {}) {
     }
   }
 
+  yield;
   const m = {};
-  for (const k in masks) m[k] = readMask(masks[k]);
+  for (const k in masks) {
+    m[k] = readMask(masks[k]);
+    yield;
+  }
 
   const noise = makeNoise((opts.seed ?? 3) * 13 + 1, 256);
   const noise2 = makeNoise((opts.seed ?? 3) * 29 + 5, 128);
@@ -237,8 +249,10 @@ export function paintBlade(info, opts = {}) {
     for (let i = 0; i < W; i++) mixX[i] = smoothstep(0.25, 0.75, fbm(noise2, (i / px1) * 0.004, 17.1, 2));
   }
   const warp = dam ? coarseField(W, H, 8, (i, j) => fbm(noise2, xOf(i) * 1.7, yOf(j) * 3.1, 4) * 2 - 1) : null;
+  yield;
 
   for (let j = 0; j < H; j++) {
+    if ((j & 7) === 7) yield;
     const y = yOf(j);
     for (let i = 0; i < W; i++) {
       const k = j * W + i;
@@ -282,9 +296,9 @@ export function paintBlade(info, opts = {}) {
     }
   }
 
-  const rc = grayCanvas(rough, W, H);
-  const lc = grayCanvas(lum, W, H);
-  const nc = normalCanvas(hgt, W, H, opts.relief ?? 2.2);
+  const rc = yield* grayCanvas(rough, W, H);
+  const lc = yield* grayCanvas(lum, W, H);
+  const nc = yield* normalCanvas(hgt, W, H, opts.relief ?? 2.2);
   return {
     map: toTexture(lc, { srgb: true }),
     roughnessMap: toTexture(rc),
@@ -295,114 +309,110 @@ export function paintBlade(info, opts = {}) {
 // ---------------------------------------------------------------------------
 // Manches
 // ---------------------------------------------------------------------------
-export function woodTextures() {
-  return memo('wood', () => {
-    const W = Math.round(1024 * quality.tex), H = Math.round(256 * quality.tex), N = W * H;
-    const col = makeCanvas(W, H);
-    const ctx = col.getContext('2d');
-    const img = ctx.createImageData(W, H);
-    const rough = new Float32Array(N), hgt = new Float32Array(N);
-    const noise = makeNoise(41, 256), noise2 = makeNoise(77, 256);
-    const light = [150, 96, 58], dark = [74, 40, 20];
-    const warpF = coarseField(W, H, 8, (i, j) => fbm(noise, (i / W) * 2.2, (j / H) * 3.0, 4) * 1.6);
-    const figureF = coarseField(W, H, 8, (i, j) => fbm(noise, (i / W) * 0.9 + 7, (j / H) * 1.4, 3));
-    for (let j = 0; j < H; j++) {
-      for (let i = 0; i < W; i++) {
-        const k = j * W + i;
-        const u = i / W, v = j / H;
-        // veines longitudinales ondulées (bois de fil) + figure douce
-        const warp = warpF(i, j) + Math.sin(u * 5.0 + v * 2.0) * 0.08;
-        const ring = (((v * 14.0 + warp) % 1) + 1) % 1;
-        const late = Math.pow(Math.sin(ring * Math.PI), 6);
-        const fine = fbm(noise2, u * 3.0, v * 90.0, 2);
-        const figure = figureF(i, j);
-        const t = clamp(late * 0.7 + (fine - 0.5) * 0.35 + (figure - 0.5) * 0.5);
-        const pore = fbm(noise2, u * 140.0, v * 6.0, 1) < 0.18 ? 0.86 : 1;
-        img.data[k * 4] = lerp(light[0], dark[0], t) * pore;
-        img.data[k * 4 + 1] = lerp(light[1], dark[1], t) * pore;
-        img.data[k * 4 + 2] = lerp(light[2], dark[2], t) * pore;
-        img.data[k * 4 + 3] = 255;
-        rough[k] = 0.45 + late * 0.1 + (1 - pore) * 0.4;
-        hgt[k] = late * 0.25 + (fine - 0.5) * 0.25 - (1 - pore) * 0.8;
-      }
+export const woodTextures = lazyValue(function* () {
+  const W = Math.round(1024 * quality.tex), H = Math.round(256 * quality.tex), N = W * H;
+  const col = makeCanvas(W, H);
+  const ctx = col.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  const rough = new Float32Array(N), hgt = new Float32Array(N);
+  const noise = makeNoise(41, 256), noise2 = makeNoise(77, 256);
+  const light = [150, 96, 58], dark = [74, 40, 20];
+  const warpF = coarseField(W, H, 8, (i, j) => fbm(noise, (i / W) * 2.2, (j / H) * 3.0, 4) * 1.6);
+  const figureF = coarseField(W, H, 8, (i, j) => fbm(noise, (i / W) * 0.9 + 7, (j / H) * 1.4, 3));
+  yield;
+  for (let j = 0; j < H; j++) {
+    if ((j & 7) === 7) yield;
+    for (let i = 0; i < W; i++) {
+      const k = j * W + i;
+      const u = i / W, v = j / H;
+      // veines longitudinales ondulées (bois de fil) + figure douce
+      const warp = warpF(i, j) + Math.sin(u * 5.0 + v * 2.0) * 0.08;
+      const ring = (((v * 14.0 + warp) % 1) + 1) % 1;
+      const late = Math.pow(Math.sin(ring * Math.PI), 6);
+      const fine = fbm(noise2, u * 3.0, v * 90.0, 2);
+      const figure = figureF(i, j);
+      const t = clamp(late * 0.7 + (fine - 0.5) * 0.35 + (figure - 0.5) * 0.5);
+      const pore = fbm(noise2, u * 140.0, v * 6.0, 1) < 0.18 ? 0.86 : 1;
+      img.data[k * 4] = lerp(light[0], dark[0], t) * pore;
+      img.data[k * 4 + 1] = lerp(light[1], dark[1], t) * pore;
+      img.data[k * 4 + 2] = lerp(light[2], dark[2], t) * pore;
+      img.data[k * 4 + 3] = 255;
+      rough[k] = 0.45 + late * 0.1 + (1 - pore) * 0.4;
+      hgt[k] = late * 0.25 + (fine - 0.5) * 0.25 - (1 - pore) * 0.8;
     }
-    ctx.putImageData(img, 0, 0);
-    return {
-      map: toTexture(col, { srgb: true }),
-      roughnessMap: toTexture(grayCanvas(rough, W, H)),
-      normalMap: toTexture(normalCanvas(hgt, W, H, 1.0)),
-    };
-  });
-}
+  }
+  ctx.putImageData(img, 0, 0);
+  return {
+    map: toTexture(col, { srgb: true }),
+    roughnessMap: toTexture(yield* grayCanvas(rough, W, H)),
+    normalMap: toTexture(yield* normalCanvas(hgt, W, H, 1.0)),
+  };
+});
 
 // G10 usiné : motif pyramidal en losanges.
-export function g10Textures() {
-  return memo('g10', () => {
-    const S = 256, N = S * S;
-    const hgt = new Float32Array(N), rough = new Float32Array(N);
-    const noise = makeNoise(91, 128);
-    const cells = 16;
-    for (let j = 0; j < S; j++) {
-      for (let i = 0; i < S; i++) {
-        const k = j * S + i;
-        const u = (i / S) * cells, v = (j / S) * cells;
-        const a = Math.abs(((u + v) % 1) - 0.5), b = Math.abs(((u - v + 64) % 1) - 0.5);
-        const pyr = 1 - Math.max(a, b) * 2;
-        const n = noise(i * 0.16, j * 0.16);
-        hgt[k] = smoothstep(0.05, 0.6, pyr) + n * 0.08;
-        rough[k] = 0.62 + n * 0.16 - smoothstep(0.7, 1, pyr) * 0.12;
-      }
+export const g10Textures = lazyValue(function* () {
+  const S = 256, N = S * S;
+  const hgt = new Float32Array(N), rough = new Float32Array(N);
+  const noise = makeNoise(91, 128);
+  const cells = 16;
+  for (let j = 0; j < S; j++) {
+    if ((j & 31) === 31) yield;
+    for (let i = 0; i < S; i++) {
+      const k = j * S + i;
+      const u = (i / S) * cells, v = (j / S) * cells;
+      const a = Math.abs(((u + v) % 1) - 0.5), b = Math.abs(((u - v + 64) % 1) - 0.5);
+      const pyr = 1 - Math.max(a, b) * 2;
+      const n = noise(i * 0.16, j * 0.16);
+      hgt[k] = smoothstep(0.05, 0.6, pyr) + n * 0.08;
+      rough[k] = 0.62 + n * 0.16 - smoothstep(0.7, 1, pyr) * 0.12;
     }
-    return {
-      roughnessMap: toTexture(grayCanvas(rough, S, S), { repeat: true }),
-      normalMap: toTexture(normalCanvas(hgt, S, S, 2.6, true), { repeat: true }),
-    };
-  });
-}
+  }
+  return {
+    roughnessMap: toTexture(yield* grayCanvas(rough, S, S), { repeat: true }),
+    normalMap: toTexture(yield* normalCanvas(hgt, S, S, 2.6, true), { repeat: true }),
+  };
+});
 
 // Grip caoutchouté : nervures transversales + grain fin.
-export function gripTextures() {
-  return memo('grip', () => {
-    const S = 256, N = S * S;
-    const hgt = new Float32Array(N), rough = new Float32Array(N);
-    const noise = makeNoise(13, 256);
-    for (let j = 0; j < S; j++) {
-      for (let i = 0; i < S; i++) {
-        const k = j * S + i;
-        const u = i / S;
-        const rib = Math.pow(Math.abs(Math.sin(u * Math.PI * 24)), 0.6);
-        const n = fbm(noise, i * 0.24, j * 0.24, 2);
-        hgt[k] = rib * 0.8 + n * 0.25;
-        rough[k] = 0.82 + n * 0.12;
-      }
+export const gripTextures = lazyValue(function* () {
+  const S = 256, N = S * S;
+  const hgt = new Float32Array(N), rough = new Float32Array(N);
+  const noise = makeNoise(13, 256);
+  for (let j = 0; j < S; j++) {
+    if ((j & 31) === 31) yield;
+    for (let i = 0; i < S; i++) {
+      const k = j * S + i;
+      const u = i / S;
+      const rib = Math.pow(Math.abs(Math.sin(u * Math.PI * 24)), 0.6);
+      const n = fbm(noise, i * 0.24, j * 0.24, 2);
+      hgt[k] = rib * 0.8 + n * 0.25;
+      rough[k] = 0.82 + n * 0.12;
     }
-    return {
-      roughnessMap: toTexture(grayCanvas(rough, S, S), { repeat: true }),
-      normalMap: toTexture(normalCanvas(hgt, S, S, 1.9, true), { repeat: true }),
-    };
-  });
-}
+  }
+  return {
+    roughnessMap: toTexture(yield* grayCanvas(rough, S, S), { repeat: true }),
+    normalMap: toTexture(yield* normalCanvas(hgt, S, S, 1.9, true), { repeat: true }),
+  };
+});
 
 // Micro-relief discret (polymère satiné, laque, métal fondu).
-export function microTextures() {
-  return memo('micro', () => {
-    const S = 128, N = S * S;
-    const hgt = new Float32Array(N), rough = new Float32Array(N);
-    const noise = makeNoise(5, 32);
-    for (let j = 0; j < S; j++) {
-      for (let i = 0; i < S; i++) {
-        const k = j * S + i;
-        const n = fbm(noise, i * 0.5, j * 0.5, 3);
-        hgt[k] = n;
-        rough[k] = 0.85 + (n - 0.5) * 0.3;
-      }
+export const microTextures = lazyValue(function* () {
+  const S = 128, N = S * S;
+  const hgt = new Float32Array(N), rough = new Float32Array(N);
+  const noise = makeNoise(5, 32);
+  for (let j = 0; j < S; j++) {
+    for (let i = 0; i < S; i++) {
+      const k = j * S + i;
+      const n = fbm(noise, i * 0.5, j * 0.5, 3);
+      hgt[k] = n;
+      rough[k] = 0.85 + (n - 0.5) * 0.3;
     }
-    return {
-      roughnessMap: toTexture(grayCanvas(rough, S, S), { repeat: true }),
-      normalMap: toTexture(normalCanvas(hgt, S, S, 0.9, true), { repeat: true }),
-    };
-  });
-}
+  }
+  return {
+    roughnessMap: toTexture(yield* grayCanvas(rough, S, S), { repeat: true }),
+    normalMap: toTexture(yield* normalCanvas(hgt, S, S, 0.9, true), { repeat: true }),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Sprites et masques
@@ -422,7 +432,7 @@ export function softboxTexture(gradient = false) {
         f[j * S + i] = inside * hot * grad;
       }
     }
-    const tex = toTexture(grayCanvas(f, S, S));
+    const tex = toTexture(finish(grayCanvas(f, S, S)));
     tex.colorSpace = THREE.NoColorSpace;
     return tex;
   });
